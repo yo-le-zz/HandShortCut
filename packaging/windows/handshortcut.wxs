@@ -78,7 +78,7 @@
       </Component>
     </ComponentGroup>
 
-    <Feature Id="Main" Title="HandShortCut" Level="1" Absent="disallow">
+    <Feature Id="Main" Title="HandShortCut" Level="1" AllowAbsent="no">
       <ComponentGroupRef Id="AppFiles" />
       <ComponentGroupRef Id="Shortcuts" />
       <ComponentGroupRef Id="Autostart" />
