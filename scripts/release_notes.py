@@ -40,7 +40,8 @@ def main(argv: list[str]) -> int:
     if len(argv) != 1:
         print(__doc__, file=sys.stderr)
         return 2
-    sys.stdout.write(notes_for(argv[0].removeprefix("v")))
+    # octets UTF-8 : la console Windows (cp1252) ne sait pas encoder tous les caracteres
+    sys.stdout.buffer.write(notes_for(argv[0].removeprefix("v")).encode("utf-8"))
     return 0
 
 

@@ -45,7 +45,7 @@ def test_changelog_has_notes_for_current_version():
     result = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "release_notes.py"), "1.0.0"],
         capture_output=True,
-        text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0 and result.stdout.strip()
 
