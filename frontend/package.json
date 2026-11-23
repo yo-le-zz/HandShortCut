@@ -1,0 +1,14 @@
+{
+  "name": "handshortcut-frontend",
+  "private": true,
+  "description": "Build des assets statiques de l'interface web (CSS Tailwind, icones Lucide, polices). Les fichiers generes sont commites : Node n'est PAS necessaire pour utiliser HandShortCut.",
+  "scripts": {
+    "build": "node build.mjs && tailwindcss -c tailwind.config.js -i input.css -o ../src/handshortcut/webui/static/app.css --minify"
+  },
+  "devDependencies": {
+    "@fontsource-variable/geist": "5.2.8",
+    "@fontsource-variable/jetbrains-mono": "5.2.8",
+    "lucide-static": "0.468.0",
+    "tailwindcss": "3.4.17"
+  }
+}

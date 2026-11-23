@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% set editing = action is not none %}
+{% block title %}{{ "Modifier l'action" if editing else "Nouvelle action" }}{% endblock %}
+{% block header %}Actions / {{ "Modifier" if editing else "Nouvelle" }}{% endblock %}
+{% block content %}
+
+<script type="application/json" id="form-data">{{ form_json | safe }}</script>
+<script type="application/json" id="action-data">{{ (action if editing else {"name": "", "steps": []}) | tojson }}</script>
+
+<div class="flex flex-wrap items-end gap-4 mb-6">
+  <label class="flex-1 min-w-[16rem] flex flex-col gap-1.5">
+    <span class="field-label">Nom de l'action</span>
+    <input type="text" id="action-name" maxlength="100" placeholder="Ex : Mode musique" class="field-input py-2.5 text-base">
+  </label>
+  <div class="flex items-center gap-2">
+    <button type="button" id="btn-test" class="btn-secondary" title="Exécute l'action telle qu'elle est affichée, sans l'enregistrer">
+      {{ icon("play", "w-4 h-4") }} Tester
+    </button>
+    <button type="button" id="btn-save" class="btn-primary">{{ icon("save", "w-4 h-4") }} Enregistrer</button>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6 items-start">
+
+  <section aria-label="Étapes de l'action">
+    <div class="flex items-center justify-between mb-3">
+      <div class="text-sm text-on-surface-variant">
+        <span id="steps-count">0 étape</span>
+        <span class="mx-1.5">·</span>
+        <span id="steps-wait" title="Somme des pauses (étapes « Pause » et délais après étape)">pauses : 0 s (0 ms)</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button type="button" id="btn-collapse" class="icon-btn" title="Replier / déplier tout">{{ icon("chevrons-up-down") }}</button>
+      </div>
+    </div>
+
+    <ol id="steps" class="space-y-2" aria-live="polite"></ol>
+
+    <div id="steps-empty" class="hidden border border-dashed border-outline rounded-xl2 py-14 flex flex-col items-center text-center">
+      <div class="w-12 h-12 rounded-full bg-surface-high flex items-center justify-center mb-4 text-on-surface-variant">{{ icon("zap") }}</div>
+      <p class="text-on-surface-variant text-sm">Aucune étape. Choisis une action dans le menu de droite.</p>
+    </div>
+    <p class="field-hint mt-4 flex items-center gap-2">
+      {{ icon("grip-vertical", "w-4 h-4") }} Glisse la poignée pour changer l'ordre d'exécution (ou utilise les flèches du clavier sur la poignée).
+    </p>
+  </section>
+
+  <aside class="card p-4 xl:sticky xl:top-20" aria-label="Ajouter une étape">
+    <div class="relative mb-3">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">{{ icon("search", "w-4 h-4") }}</span>
+      <input type="search" id="palette-search" placeholder="Rechercher une action…" class="field-input pl-9" autocomplete="off">
+    </div>
+    <div id="palette-tabs" class="flex flex-wrap gap-1.5 mb-3"></div>
+    <div id="palette" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+  </aside>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/action_form.js') }}"></script>
+{% endblock %}

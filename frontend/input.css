@@ -1,0 +1,123 @@
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("fonts/geist-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "JetBrains Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations");
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-background text-on-surface font-sans; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #2d2d39; border-radius: 20px; }
+}
+
+@layer components {
+  /* Icones Lucide (sprite /static/icons.svg) : trait herite de currentColor */
+  .icon {
+    width: 1.25rem; height: 1.25rem; flex-shrink: 0;
+    fill: none; stroke: currentColor; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round;
+    vertical-align: middle;
+  }
+  .glass { background: rgba(19, 19, 23, 0.75); backdrop-filter: blur(12px); }
+
+  /* Navigation laterale */
+  .nav-link { color: #a9a2b8; border-left: 2px solid transparent; transition: color .15s, background .15s; }
+  .nav-link:hover { color: #e4e1e7; background: rgba(255, 255, 255, 0.04); }
+  .nav-link.active {
+    color: #e4e1e7; background: rgba(139, 92, 246, 0.12); border-left-color: #8b5cf6;
+  }
+
+  /* Champs de formulaire */
+  .field-input {
+    @apply w-full bg-surface-low border border-outline rounded-lg px-3 py-2 text-sm
+      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30;
+  }
+  .field-input.invalid { @apply border-error ring-2 ring-error/20; }
+  .field-label { @apply text-xs font-mono uppercase tracking-wider text-on-surface-variant; }
+  .field-hint { @apply text-xs text-on-surface-variant; }
+  input[type="range"] { accent-color: #8b5cf6; }
+
+  /* Boutons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-primary hover:brightness-110
+      transition text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-glow
+      disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 border border-outline-strong
+      text-on-surface hover:bg-white/5 transition text-sm font-medium px-4 py-2.5 rounded-lg
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 border border-error text-error
+      hover:bg-error/10 transition text-sm font-medium px-4 py-2.5 rounded-lg
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant
+      hover:bg-white/5 hover:text-on-surface transition focus-visible:outline-none
+      focus-visible:ring-2 focus-visible:ring-primary/50;
+  }
+  .icon-btn.danger:hover { @apply text-error bg-error/10; }
+  .icon-btn.success:hover { @apply text-success bg-success/10; }
+
+  /* Cartes et pastilles */
+  .card { @apply bg-surface-container border border-outline rounded-xl2; }
+  .chip {
+    @apply inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider
+      px-2 py-0.5 rounded-full;
+  }
+  .chip-primary { @apply bg-primary/15 text-accent; }
+  .chip-muted { @apply bg-white/5 text-on-surface-variant; }
+
+  /* Categories d'etapes : une couleur par categorie (variable --cat = "r g b") */
+  .cat-windows { --cat: 96 165 250; }
+  .cat-input   { --cat: 251 191 36; }
+  .cat-media   { --cat: 244 114 182; }
+  .cat-web     { --cat: 52 211 153; }
+  .cat-files   { --cat: 167 139 250; }
+  .cat-system  { --cat: 251 146 60; }
+  .cat-logic   { --cat: 34 211 238; }
+  .cat-chip    { background: rgb(var(--cat) / 0.15); color: rgb(var(--cat)); }
+  .cat-text    { color: rgb(var(--cat)); }
+  .cat-edge    { border-left: 3px solid rgb(var(--cat) / 0.8); }
+  .cat-hover:hover { border-color: rgb(var(--cat) / 0.6); background: rgb(var(--cat) / 0.06); }
+  .cat-active { background: rgb(var(--cat) / 0.18); color: rgb(var(--cat)); border-color: rgb(var(--cat) / 0.5); }
+
+  /* Editeur d'actions */
+  .step-card { @apply bg-surface-container border border-outline rounded-xl transition; }
+  .step-card.dragging { opacity: 0.35; }
+  .step-card.disabled-step { opacity: 0.55; }
+  .step-card.drop-before { box-shadow: 0 -3px 0 0 #8b5cf6; }
+  .step-card.drop-after { box-shadow: 0 3px 0 0 #8b5cf6; }
+  .drag-handle { @apply cursor-grab active:cursor-grabbing touch-none; }
+  .palette-item {
+    @apply flex items-center gap-2.5 w-full text-left text-sm px-2.5 py-2 rounded-lg border
+      border-transparent text-on-surface transition;
+  }
+  .switch { @apply relative inline-block w-9 h-5 rounded-full bg-outline-strong transition cursor-pointer; }
+  .switch::after {
+    content: ""; @apply absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition;
+  }
+  .switch[aria-checked="true"] { @apply bg-primary; }
+  .switch[aria-checked="true"]::after { transform: translateX(1rem); }
+
+  /* Mesures en direct */
+  .meter { @apply relative h-2 rounded-full bg-white/10 overflow-hidden; }
+  .meter > span { @apply absolute inset-y-0 left-0 rounded-full bg-success transition-all duration-150; }
+  .meter > span.over { @apply bg-error; }
+  .meter > i { @apply absolute inset-y-[-3px] w-0.5 bg-white/80; }
+}

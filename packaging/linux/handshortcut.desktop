@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=HandShortCut
+GenericName=Hand gestures
+GenericName[fr]=Gestes de la main
+Comment=Trigger actions with hand gestures (webcam)
+Comment[fr]=Déclenche des actions avec des gestes de la main (webcam)
+Exec=handshortcut --open
+TryExec=handshortcut
+Icon=handshortcut
+Terminal=false
+Categories=Utility;
+Keywords=gesture;hand;camera;shortcut;webcam;geste;main;raccourci;
+StartupNotify=false
+Actions=stop;
+
+[Desktop Action stop]
+Name=Stop HandShortCut
+Name[fr]=Arrêter HandShortCut
+Exec=handshortcut stop

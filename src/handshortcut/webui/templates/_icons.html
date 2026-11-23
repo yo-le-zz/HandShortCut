@@ -1,0 +1,4 @@
+{#- Icone Lucide du sprite static/icons.svg (voir frontend/build.mjs). -#}
+{% macro icon(name, cls="") -%}
+<svg class="icon {{ cls }}" aria-hidden="true"><use href="{{ url_for('static', filename='icons.svg') }}#{{ name }}"/></svg>
+{%- endmacro %}

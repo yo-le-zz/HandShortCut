@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% set editing = gesture is not none %}
+{% block title %}{{ "Modifier le geste" if editing else "Nouveau geste" }}{% endblock %}
+{% block header %}Gestes / {{ "Modifier" if editing else "Nouveau" }}{% endblock %}
+{% block content %}
+
+<div class="border-l-2 border-primary pl-3 mb-8">
+  <h1 class="text-2xl font-semibold">{{ "Modifier : " ~ gesture.name if editing else "Créer un nouveau geste" }}</h1>
+  {% if editing %}
+  <p class="text-sm text-on-surface-variant mt-1">Change les réglages ci-dessous, ou ré-enregistre le geste pour remplacer son modèle.</p>
+  {% endif %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
+
+  <div class="space-y-4 lg:sticky lg:top-20">
+    <div class="relative rounded-xl2 overflow-hidden border border-outline bg-surface-low aspect-video">
+      <img id="video" src="/video_feed" alt="Aperçu caméra" class="w-full h-full object-cover">
+      <div id="camera-overlay" class="hidden absolute inset-0 flex-col items-center justify-center gap-3 bg-surface-low text-on-surface-variant text-sm text-center px-6">
+        {{ icon("camera-off", "w-8 h-8") }}
+        <span id="camera-overlay-text">Caméra indisponible.</span>
+      </div>
+      <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full text-xs font-mono">
+        <span id="rec-dot" class="w-1.5 h-1.5 rounded-full bg-success"></span>
+        <span id="rec-status">Prêt</span>
+      </div>
+      <div class="absolute top-3 right-3 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full text-xs font-mono flex items-center gap-1.5">
+        {{ icon("gauge", "w-3.5 h-3.5") }} <span data-fps>—</span>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="button" id="btn-start" class="btn-primary flex-1">{{ icon("circle-dot", "w-4 h-4") }} {{ "Ré-enregistrer" if editing else "Démarrer" }}</button>
+      <button type="button" id="btn-stop" disabled class="btn-danger flex-1">{{ icon("square", "w-4 h-4") }} Arrêter</button>
+    </div>
+
+    <div id="capture-info" class="card p-4 text-sm hidden">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-2">{{ icon("film", "w-4 h-4") }} Dernier enregistrement</div>
+      <div id="capture-text"></div>
+    </div>
+
+    <div id="live-panel" class="card p-4 hidden">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-2">{{ icon("activity", "w-4 h-4") }} Détection en direct</div>
+      <div class="meter mb-2" id="live-meter"><span></span><i></i></div>
+      <div class="flex justify-between text-xs font-mono text-on-surface-variant">
+        <span id="live-distance">distance —</span>
+        <span id="live-held">tenue —</span>
+      </div>
+      <p class="field-hint mt-2">La barre se remplit quand ta main s'éloigne du geste ; le trait blanc est le seuil. Le geste est reconnu quand la barre reste à gauche du trait.</p>
+    </div>
+  </div>
+
+  <form id="gesture-form" class="card p-6 flex flex-col gap-5"
+    data-gesture-id="{{ gesture.id if editing else '' }}"
+    data-type="{{ gesture.type if editing else 'static' }}"
+    data-legacy-fps="{{ legacy_fps }}"
+    data-duration="{{ gesture.duration if editing and gesture.duration else '' }}"
+    data-keyframes="{{ gesture.keyframes | length if editing and gesture.keyframes else '' }}">
+
+    <label class="flex flex-col gap-1.5">
+      <span class="field-label">Nom du geste</span>
+      <input type="text" id="name" placeholder="Ex : Poing fermé" required maxlength="100" class="field-input py-2.5"
+        value="{{ gesture.name if editing else '' }}">
+    </label>
+
+    <div class="flex flex-col gap-2">
+      <span class="field-label">Type de geste</span>
+      <div class="grid grid-cols-2 gap-2 text-sm">
+        <label class="flex items-center gap-2 cursor-pointer border border-outline rounded-lg px-3 py-2 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+          <input type="radio" name="type" value="static" class="accent-primary" {{ "checked" if not editing or gesture.type == "static" else "" }}>
+          {{ icon("hand", "w-4 h-4") }} Pose statique
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer border border-outline rounded-lg px-3 py-2 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+          <input type="radio" name="type" value="sequence" class="accent-primary" {{ "checked" if editing and gesture.type == "sequence" else "" }}>
+          {{ icon("route", "w-4 h-4") }} Mouvement
+        </label>
+      </div>
+      <p class="field-hint" id="type-hint"></p>
+    </div>
+
+    <div class="flex flex-col gap-4 border-t border-outline pt-5">
+      <label class="flex flex-col gap-1.5">
+        <span class="field-label flex items-center gap-2">{{ icon("sliders-horizontal", "w-4 h-4") }} Sensibilité (seuil)</span>
+        <div class="flex items-center gap-3">
+          <input type="range" id="threshold-range" min="0.01" max="0.6" step="0.01" class="flex-1">
+          <input type="number" id="threshold" step="0.01" min="0.01" max="2" class="field-input w-24">
+        </div>
+        <span class="field-hint">Plus bas = plus strict, plus haut = plus tolérant.</span>
+      </label>
+
+      <label id="hold-field" class="flex flex-col gap-1.5">
+        <span class="field-label flex items-center gap-2">{{ icon("timer", "w-4 h-4") }} Durée de tenue de la pose</span>
+        <div class="flex items-center gap-3">
+          <input type="range" id="hold-range" min="0" max="3000" step="10" class="flex-1">
+          <div class="relative w-28">
+            <input type="number" id="hold_ms" min="0" max="10000" step="10" class="field-input pr-9">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant font-mono">ms</span>
+          </div>
+        </div>
+        <span class="field-hint" id="hold-hint"></span>
+      </label>
+
+      <div id="sequence-info" class="hidden bg-surface-low border border-outline rounded-lg p-3 text-sm space-y-1">
+        <div class="flex items-center gap-2">{{ icon("route", "w-4 h-4") }} <span id="sequence-duration"></span></div>
+        <div class="field-hint" id="sequence-frames"></div>
+      </div>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="field-label flex items-center gap-2">{{ icon("clock", "w-4 h-4") }} Pause après déclenchement</span>
+        <div class="flex items-center gap-3">
+          <div class="relative w-32">
+            <input type="number" id="cooldown_seconds" min="0" max="86400" step="0.5" class="field-input pr-8">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant font-mono">s</span>
+          </div>
+          <span class="field-hint" id="cooldown-hint"></span>
+        </div>
+      </label>
+    </div>
+
+    <label class="flex flex-col gap-1.5 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("zap", "w-4 h-4") }} Action à déclencher</span>
+      <select id="action_id" class="field-input py-2.5">
+        <option value="">— aucune (à lier plus tard) —</option>
+        {% for a in actions %}
+        <option value="{{ a.id }}" {{ "selected" if editing and a.id == gesture.action_id else "" }}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <div class="flex gap-3 pt-4 border-t border-outline">
+      <button type="submit" id="btn-save" class="btn-primary flex-1" {{ "" if editing else "disabled" }}>
+        {{ icon("save", "w-[18px] h-[18px]") }} {{ "Enregistrer les modifications" if editing else "Enregistrer le geste" }}
+      </button>
+      <a href="/" class="btn-secondary">{{ icon("x", "w-[18px] h-[18px]") }} Annuler</a>
+    </div>
+  </form>
+</div>
+
+{% if editing %}
+<script type="application/json" id="gesture-data">{{ {"threshold": gesture.get("threshold", 0.16 if gesture.get("type") != "sequence" else 0.22), "hold_ms": hold_ms_of(gesture), "cooldown_seconds": gesture.get("cooldown_seconds", 10)} | tojson }}</script>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/gesture_form.js') }}"></script>
+{% endblock %}

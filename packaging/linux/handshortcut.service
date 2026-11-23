@@ -1,0 +1,16 @@
+[Unit]
+Description=HandShortCut - gestes de la main vers actions
+Documentation=file:///usr/share/doc/handshortcut/README.md
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/handshortcut
+# code 0 si une instance tourne deja : pas de boucle de redemarrage
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=graphical-session.target

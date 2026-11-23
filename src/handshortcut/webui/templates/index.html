@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Tableau de bord{% endblock %}
+{% block header %}Tableau de bord{% endblock %}
+{% block content %}
+
+<div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-8">
+  <div class="space-y-12">
+
+    <section id="gestures">
+      <div class="flex items-end justify-between mb-5">
+        <div class="border-l-2 border-primary pl-3">
+          <h1 class="text-xl font-semibold">Gestes configurés</h1>
+          <p class="text-sm text-on-surface-variant mt-0.5">Un geste déclenche une action quand il est reconnu par la caméra.</p>
+        </div>
+        <a href="/gestures/new" class="btn-primary">{{ icon("plus", "w-4 h-4") }} Nouveau geste</a>
+      </div>
+
+      {% if gestures %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for g in gestures %}
+        <div class="card p-5 hover:border-outline-strong transition" data-gesture-card="{{ g.id }}">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-primary/15 text-accent flex items-center justify-center">
+              {{ icon("hand" if g.type == "static" else "route") }}
+            </div>
+            <div class="flex items-center gap-0.5">
+              <a href="/gestures/{{ g.id }}/edit" title="Modifier (réglages et ré-enregistrement)" class="icon-btn">{{ icon("pencil", "w-[18px] h-[18px]") }}</a>
+              <button type="button" data-duplicate-gesture="{{ g.id }}" title="Dupliquer" class="icon-btn">{{ icon("copy", "w-[18px] h-[18px]") }}</button>
+              <button type="button" data-delete-gesture="{{ g.id }}" title="Supprimer" class="icon-btn danger">{{ icon("trash-2", "w-[18px] h-[18px]") }}</button>
+            </div>
+          </div>
+          <div class="font-medium mb-2">{{ g.name }}</div>
+          <div class="flex flex-wrap items-center gap-1.5 mb-4">
+            <span class="chip chip-primary">{{ "statique" if g.type == "static" else "séquence" }}</span>
+            {% if g.type == "static" %}
+            <span class="chip chip-muted" title="Durée pendant laquelle la pose doit être tenue">{{ icon("clock", "w-3 h-3") }} tenue {{ hold_ms_of(g) | ms }}</span>
+            {% elif g.duration %}
+            <span class="chip chip-muted" title="Durée du mouvement enregistré">{{ icon("clock", "w-3 h-3") }} mouvement {{ g.duration | seconds }}</span>
+            {% endif %}
+            <span class="chip chip-muted" title="Délai avant une nouvelle détection">{{ icon("timer", "w-3 h-3") }} pause {{ g.cooldown_seconds | default(10) | seconds }}</span>
+          </div>
+          <label class="flex flex-col gap-1.5">
+            <span class="field-label flex items-center gap-1.5">{{ icon("zap", "w-3.5 h-3.5") }} Action liée</span>
+            <select data-gesture-action="{{ g.id }}" class="field-input">
+              <option value="">— aucune —</option>
+              {% for a in actions %}
+              <option value="{{ a.id }}" {{ "selected" if a.id == g.action_id else "" }}>{{ a.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="meter mt-4 hidden" data-live-meter="{{ g.id }}" title="Distance actuelle à ce geste (la barre se remplit quand la main s'en approche)"><span></span><i></i></div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="border border-dashed border-outline rounded-xl2 py-14 flex flex-col items-center justify-center text-center">
+        <div class="w-12 h-12 rounded-full bg-surface-high flex items-center justify-center mb-4 text-on-surface-variant">{{ icon("hand") }}</div>
+        <p class="text-on-surface-variant text-sm">Aucun geste configuré.</p>
+        <a href="/gestures/new" class="text-accent text-sm mt-1 hover:underline">Créer le premier</a>
+      </div>
+      {% endif %}
+    </section>
+
+    <section id="actions">
+      <div class="flex items-end justify-between mb-5">
+        <div class="border-l-2 border-primary pl-3">
+          <h1 class="text-xl font-semibold">Actions configurées</h1>
+          <p class="text-sm text-on-surface-variant mt-0.5">Une action est une suite d'étapes, exécutées dans l'ordre.</p>
+        </div>
+        <a href="/actions/new" class="btn-primary">{{ icon("plus", "w-4 h-4") }} Nouvelle action</a>
+      </div>
+
+      {% if actions %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for a in actions %}
+        <div class="card p-5 hover:border-outline-strong transition">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-1 flex-wrap max-w-[14rem]">
+              {% for step in a.steps[:7] %}
+              {% set meta = steps.get(step.type) %}
+              {% if meta %}
+              <span class="cat-{{ meta.category }} cat-chip w-8 h-8 rounded-lg flex items-center justify-center {{ 'opacity-40' if step.enabled == false else '' }}" title="{{ meta.label }}">{{ icon(meta.icon, "w-[18px] h-[18px]") }}</span>
+              {% endif %}
+              {% endfor %}
+              {% if a.steps | length > 7 %}<span class="chip chip-muted">+{{ a.steps | length - 7 }}</span>{% endif %}
+              {% if not a.steps %}
+              <span class="w-8 h-8 rounded-lg bg-white/5 text-on-surface-variant flex items-center justify-center">{{ icon("zap", "w-[18px] h-[18px]") }}</span>
+              {% endif %}
+            </div>
+            <div class="flex items-center gap-0.5">
+              <button type="button" data-run-action="{{ a.id }}" title="Tester l'action" class="icon-btn success">{{ icon("play", "w-[18px] h-[18px]") }}</button>
+              <a href="/actions/{{ a.id }}/edit" title="Modifier" class="icon-btn">{{ icon("pencil", "w-[18px] h-[18px]") }}</a>
+              <button type="button" data-duplicate-action="{{ a.id }}" title="Dupliquer" class="icon-btn">{{ icon("copy", "w-[18px] h-[18px]") }}</button>
+              <button type="button" data-delete-action="{{ a.id }}" title="Supprimer" class="icon-btn danger">{{ icon("trash-2", "w-[18px] h-[18px]") }}</button>
+            </div>
+          </div>
+          <div class="font-medium mb-1">{{ a.name }}</div>
+          <div class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant">{{ a.steps | length }} étape(s)</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="border border-dashed border-outline rounded-xl2 py-14 flex flex-col items-center justify-center text-center">
+        <div class="w-12 h-12 rounded-full bg-surface-high flex items-center justify-center mb-4 text-on-surface-variant">{{ icon("zap") }}</div>
+        <p class="text-on-surface-variant text-sm">Aucune action configurée.</p>
+        <a href="/actions/new" class="text-accent text-sm mt-1 hover:underline">Créer la première</a>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="space-y-4">
+    <div class="card p-5">
+      <div class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant mb-4">Statut système</div>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between items-center"><span class="text-on-surface-variant">Caméra</span><span class="flex items-center gap-1.5" data-camera-text>—</span></div>
+        <div class="flex justify-between items-center"><span class="text-on-surface-variant">Cadence</span><span class="font-mono" data-fps>—</span></div>
+        <div class="flex justify-between items-center"><span class="text-on-surface-variant">Gestes</span><span class="font-mono">{{ gestures | length }}</span></div>
+        <div class="flex justify-between items-center"><span class="text-on-surface-variant">Actions</span><span class="font-mono">{{ actions | length }}</span></div>
+      </div>
+    </div>
+    <div class="card p-5">
+      <div class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-1.5">{{ icon("lightbulb", "w-3.5 h-3.5") }} Astuce</div>
+      <p class="text-sm text-on-surface-variant leading-relaxed">Crée d'abord tes actions, puis enregistre un geste et lie-le. Sur la page d'un geste, la barre de distance en direct t'aide à régler le seuil.</p>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}
