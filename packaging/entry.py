@@ -1,6 +1,6 @@
-"""Point d'entree compile par Nuitka (equivalent de la commande `handshortcut`)."""
+"""Point d'entree compile par Nuitka (equivalent de la commande `physicalshortcut`)."""
 
-from handshortcut.cli import main
+from physicalshortcut.cli import main
 
 if __name__ == "__main__":
     raise SystemExit(main())

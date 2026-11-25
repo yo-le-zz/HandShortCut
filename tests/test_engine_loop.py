@@ -9,8 +9,8 @@ import pytest
 np = pytest.importorskip("numpy")
 pytest.importorskip("mediapipe")
 
-from handshortcut import gesture_engine  # noqa: E402
-from handshortcut.gesture_engine import GestureEngine  # noqa: E402
+from physicalshortcut import gesture_engine  # noqa: E402
+from physicalshortcut.gesture_engine import GestureEngine  # noqa: E402
 
 
 class FakeCap:
@@ -104,7 +104,7 @@ def test_mjpeg_stream_through_waitress(store, engine):
     """Le flux video doit etre diffuse image par image (pas bufferise)."""
     import waitress.server
 
-    from handshortcut.webui.app import create_app
+    from physicalshortcut.webui.app import create_app
 
     server = waitress.server.create_server(
         create_app(engine, store), host="127.0.0.1", port=0, threads=4

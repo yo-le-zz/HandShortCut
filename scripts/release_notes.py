@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Extrait les notes d'une version depuis CHANGELOG.md (utilise par la CI).
 
-    python scripts/release_notes.py 1.0.0 > notes.md
-    python scripts/release_notes.py --check-tag v1.0.0     verifie tag == version de pyproject.toml
+    python scripts/release_notes.py 2.0.0 > notes.md
+    python scripts/release_notes.py --check-tag v2.0.0     verifie tag == version de pyproject.toml
 """
 
 from __future__ import annotations

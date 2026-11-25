@@ -84,7 +84,9 @@ def test_action_crud_and_validation(client, store, api):
 
 def test_action_run_endpoint(client, store, api, monkeypatch):
     ran = []
-    monkeypatch.setattr("handshortcut.webui.app.action_executor.run_action", ran.append)
+    monkeypatch.setattr(
+        "physicalshortcut.webui.app.action_executor.run_action_sync", lambda a, c=None: ran.append(a) or {"ok": True, "ms": 1, "vars": {}}
+    )
     action_id = store.save_action({"name": "A", "steps": []})
     assert client.post(f"/api/actions/{action_id}/run", headers=api).status_code == 200
     assert ran and ran[0]["id"] == action_id

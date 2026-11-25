@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-  Construit les paquets Windows : dist\HandShortCut-Setup-<version>.exe (Inno Setup)
-  et dist\HandShortCut-<version>-x64.msi (WiX).
+  Construit les paquets Windows : dist\PhysicalShortCut-Setup-<version>.exe (Inno Setup)
+  et dist\PhysicalShortCut-<version>-x64.msi (WiX).
 .DESCRIPTION
   1. compile l'executable natif avec Nuitka (uv + compilateur C : Nuitka telecharge
      MinGW64 automatiquement au premier lancement) ;
@@ -13,7 +13,7 @@ param([switch]$SkipExe, [switch]$SkipMsi, [switch]$SkipCompile)
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path "$PSScriptRoot\..\..").Path
 $Version = (Select-String -Path "$Root\pyproject.toml" -Pattern '^version\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
-Write-Host "==> HandShortCut $Version"
+Write-Host "==> PhysicalShortCut $Version"
 
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) { throw "uv introuvable : https://docs.astral.sh/uv/" }
 if (-not $SkipCompile) {
@@ -33,4 +33,4 @@ if (-not $SkipExe) {
     if ($LASTEXITCODE -ne 0) { throw "ISCC a echoue" }
 }
 if (-not $SkipMsi) { & "$PSScriptRoot\build_msi.ps1" }
-Get-ChildItem "$Root\dist" | Where-Object { $_.Name -match 'HandShortCut' }
+Get-ChildItem "$Root\dist" | Where-Object { $_.Name -match 'PhysicalShortCut' }

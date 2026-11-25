@@ -1,4 +1,4 @@
-# Contribuer à HandShortCut
+# Contribuer à PhysicalShortCut
 
 ```bash
 uv sync

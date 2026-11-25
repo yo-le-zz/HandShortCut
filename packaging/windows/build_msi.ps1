@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-  Construit le paquet MSI : dist\HandShortCut-<version>-x64.msi
+  Construit le paquet MSI : dist\PhysicalShortCut-<version>-x64.msi
 .DESCRIPTION
-  Suppose que l'executable natif est deja compile (build\exe\handshortcut.dist, voir
+  Suppose que l'executable natif est deja compile (build\exe\physicalshortcut.dist, voir
   build.ps1). Necessite le WiX Toolset v5 :  dotnet tool install --global wix --version 5.0.2
   (l'extension d'interface WixToolset.UI.wixext est ajoutee automatiquement).
 #>
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path "$PSScriptRoot\..\..").Path
-$Dist = Join-Path $Root "build\exe\handshortcut.dist"
-if (-not (Test-Path (Join-Path $Dist "handshortcut.exe"))) {
+$Dist = Join-Path $Root "build\exe\physicalshortcut.dist"
+if (-not (Test-Path (Join-Path $Dist "physicalshortcut.exe"))) {
     throw "Executable introuvable ($Dist). Lance d'abord packaging\windows\build.ps1 (ou build_exe.py)."
 }
 if (-not (Get-Command wix -ErrorAction SilentlyContinue)) {
@@ -33,8 +33,8 @@ if ($LASTEXITCODE -ne 0) { throw "Ajout de l'extension WiX UI impossible" }
 
 $OutDir = Join-Path $Root "dist"
 New-Item -ItemType Directory -Force $OutDir | Out-Null
-$Msi = Join-Path $OutDir "HandShortCut-$Version-x64.msi"
-wix build "$PSScriptRoot\handshortcut.wxs" `
+$Msi = Join-Path $OutDir "PhysicalShortCut-$Version-x64.msi"
+wix build "$PSScriptRoot\physicalshortcut.wxs" `
     -arch x64 -culture fr-FR `
     -ext WixToolset.UI.wixext `
     -d Version=$MsiVersion `

@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from handshortcut.gesture_engine import (
+from physicalshortcut.gesture_engine import (
     GestureEngine,
     distance,
     extract_frame_vector,

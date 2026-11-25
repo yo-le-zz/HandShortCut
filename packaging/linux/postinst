@@ -2,10 +2,10 @@
 # Active le service utilisateur pour tous les comptes (demarrage a la prochaine connexion).
 set -e
 if command -v systemctl >/dev/null 2>&1; then
-    systemctl --global enable handshortcut.service >/dev/null 2>&1 || true
+    systemctl --global enable physicalshortcut.service >/dev/null 2>&1 || true
 fi
 command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || true
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q /usr/share/applications 2>/dev/null || true
-echo "HandShortCut installe. Demarrage automatique a la prochaine connexion."
-echo "Lancer maintenant : handshortcut --open   (ou : systemctl --user restart handshortcut)"
+echo "PhysicalShortCut installe. Demarrage automatique a la prochaine connexion."
+echo "Lancer maintenant : physicalshortcut --open   (ou : systemctl --user restart physicalshortcut)"
 exit 0

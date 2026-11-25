@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% set editing = gesture is not none %}
+{% block title %}{{ "Modifier le geste" if editing else "Nouveau geste" }}{% endblock %}
+{% block header %}Gestes / {{ "Modifier" if editing else "Nouveau" }}{% endblock %}
+{% block content %}
+
+<div class="border-l-2 border-primary pl-3 mb-8">
+  <h1 class="text-2xl font-semibold">{{ "Modifier : " ~ gesture.name if editing else "Créer un nouveau geste" }}</h1>
+  {% if editing %}
+  <p class="text-sm text-on-surface-variant mt-1">Change les réglages ci-dessous, ou ré-enregistre le geste pour remplacer son modèle.</p>
+  {% endif %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
+
+  <div id="sensor-col" class="hidden card p-5 space-y-3 lg:sticky lg:top-20">
+    <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant flex items-center gap-2">{{ icon("activity", "w-4 h-4") }} Capteur en direct</div>
+    <p class="text-sm text-on-surface-variant" id="sensor-intro">Aucune caméra nécessaire pour ce type de déclencheur.</p>
+    <div id="sensor-live" class="font-mono text-sm space-y-1"></div>
+    <p class="field-hint">Les capteurs sont activés seulement si un geste de ce type existe. Détails et limites : page Activité → Capteurs.</p>
+  </div>
+
+  <div id="camera-col" class="space-y-4 lg:sticky lg:top-20">
+    <div class="relative rounded-xl2 overflow-hidden border border-outline bg-surface-low aspect-video">
+      <img id="video" src="/video_feed" alt="Aperçu caméra" class="w-full h-full object-cover">
+      <div id="camera-overlay" class="hidden absolute inset-0 flex-col items-center justify-center gap-3 bg-surface-low text-on-surface-variant text-sm text-center px-6">
+        {{ icon("camera-off", "w-8 h-8") }}
+        <span id="camera-overlay-text">Caméra indisponible.</span>
+      </div>
+      <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full text-xs font-mono">
+        <span id="rec-dot" class="w-1.5 h-1.5 rounded-full bg-success"></span>
+        <span id="rec-status">Prêt</span>
+      </div>
+      <div class="absolute top-3 right-3 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full text-xs font-mono flex items-center gap-1.5">
+        {{ icon("gauge", "w-3.5 h-3.5") }} <span data-fps>—</span>
+      </div>
+    </div>
+
+    <div class="flex gap-2" id="record-buttons">
+      <button type="button" id="btn-start" class="btn-primary flex-1">{{ icon("circle-dot", "w-4 h-4") }} {{ "Ré-enregistrer" if editing else "Démarrer" }}</button>
+      <button type="button" id="btn-stop" disabled class="btn-danger flex-1">{{ icon("square", "w-4 h-4") }} Arrêter</button>
+    </div>
+
+    <div id="capture-info" class="card p-4 text-sm hidden">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-2">{{ icon("film", "w-4 h-4") }} Dernier enregistrement</div>
+      <div id="capture-text"></div>
+    </div>
+
+    <div id="hands-panel" class="card p-4">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-2">{{ icon("hand", "w-4 h-4") }} Mains détectées en direct</div>
+      <div id="hands-readout" class="space-y-2 text-sm"><span class="text-on-surface-variant">Aucune main visible.</span></div>
+    </div>
+
+    <div id="draw-panel" class="card p-4 hidden">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-2">{{ icon("pencil", "w-4 h-4") }} Aperçu du tracé</div>
+      <canvas id="draw-canvas" width="320" height="240" class="w-full rounded-lg bg-surface-low border border-outline"></canvas>
+      <div class="flex justify-between text-xs font-mono text-on-surface-variant mt-2"><span id="draw-pen">stylo levé</span><span id="draw-last">—</span></div>
+    </div>
+
+    <div id="live-panel" class="card p-4 hidden">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-2">{{ icon("activity", "w-4 h-4") }} Détection en direct</div>
+      <div class="meter mb-2" id="live-meter"><span></span><i></i></div>
+      <div class="flex justify-between text-xs font-mono text-on-surface-variant">
+        <span id="live-distance">distance —</span>
+        <span id="live-held">tenue —</span>
+      </div>
+      <p class="field-hint mt-2">La barre se remplit quand ta main s'éloigne du geste ; le trait blanc est le seuil. Le geste est reconnu quand la barre reste à gauche du trait.</p>
+    </div>
+  </div>
+
+  <form id="gesture-form" class="card p-6 flex flex-col gap-5"
+    data-gesture-id="{{ gesture.id if editing else '' }}"
+    data-type="{{ gesture.type if editing else 'static' }}"
+    data-legacy-fps="{{ legacy_fps }}"
+    data-duration="{{ gesture.duration if editing and gesture.duration else '' }}"
+    data-keyframes="{{ gesture.keyframes | length if editing and gesture.keyframes else '' }}">
+
+    <label class="flex flex-col gap-1.5">
+      <span class="field-label">Nom du geste</span>
+      <input type="text" id="name" placeholder="Ex : Poing fermé" required maxlength="100" class="field-input py-2.5"
+        value="{{ gesture.name if editing else '' }}">
+    </label>
+
+    <div class="flex flex-col gap-2">
+      <span class="field-label">Type de geste</span>
+      <div class="grid grid-cols-2 gap-2 text-sm">
+        {% for value, label, ico in [("static", "Pose enregistrée", "hand"), ("sequence", "Mouvement", "route"), ("pose", "Doigts levés", "hand-metal"), ("count", "Compter les doigts", "hash"), ("draw", "Dessiner dans l'air", "pencil"), ("sound", "Son (clap, bruit)", "volume-2"), ("voice", "Voix", "mic"), ("fingerprint", "Empreinte", "fingerprint"), ("device", "Branchement / événement", "usb"), ("sensor", "Capteur (seuil)", "thermometer")] %}
+        <label class="flex items-center gap-2 cursor-pointer border border-outline rounded-lg px-3 py-2 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+          <input type="radio" name="type" value="{{ value }}" class="accent-primary" {{ "checked" if (not editing and value == "static") or (editing and gesture.type == value) else "" }}>
+          {{ icon(ico, "w-4 h-4") }} {{ label }}
+        </label>
+        {% endfor %}
+      </div>
+      <p class="field-hint" id="type-hint"></p>
+    </div>
+
+    <div id="hands-field" class="flex flex-col gap-1.5">
+      <span class="field-label flex items-center gap-2">{{ icon("hand", "w-4 h-4") }} Nombre de mains</span>
+      <select id="hands" class="field-input">
+        <option value="1">1 main</option>
+        <option value="2">2 mains (les deux doivent être visibles)</option>
+        <option value="any" id="hands-any">N'importe laquelle / les deux (total)</option>
+      </select>
+    </div>
+
+    <div id="pose-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("hand-metal", "w-4 h-4") }} Doigts à lever</span>
+      <div class="flex flex-wrap gap-1.5" id="pose-presets"></div>
+      <div id="pose-main"></div>
+      <div id="pose-second" class="hidden"></div>
+      <p class="field-hint">Clique un doigt : <b>levé</b> → <b>baissé</b> → <b>peu importe</b>. La détection se fait sur la forme de la main, donc pas besoin d'enregistrer.</p>
+    </div>
+
+    <div id="count-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("hash", "w-4 h-4") }} Nombre de doigts levés</span>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="flex flex-col gap-1.5"><span class="field-hint">Minimum</span><input type="number" id="min_value" min="0" max="10" class="field-input"></label>
+        <label class="flex flex-col gap-1.5"><span class="field-hint">Maximum</span><input type="number" id="max_value" min="0" max="10" class="field-input"></label>
+      </div>
+      <p class="field-hint">Le geste se déclenche pour n'importe quel nombre dans cet intervalle, et <b>transmet ce nombre</b> au workflow : <code class="font-mono text-accent">{{ "{{ gesture.value }}" }}</code>.</p>
+    </div>
+
+    <div id="sound-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("volume-2", "w-4 h-4") }} Son</span>
+      <select id="sound" class="field-input">
+        <option value="clap">Un claquement</option><option value="double_clap">Double claquement</option><option value="triple_clap">Triple claquement</option>
+        <option value="any_clap">N'importe quel claquement</option><option value="loud">Bruit fort (au-dessus d'un niveau)</option><option value="silence">Silence (sous un niveau)</option></select>
+      <label id="sensitivity-field" class="flex flex-col gap-1.5"><span class="field-hint">Sensibilité aux claquements : <b id="sens-label">50 %</b></span>
+        <input type="range" id="sensitivity" min="0.05" max="1" step="0.05" class="w-full"></label>
+      <label id="level-field" class="flex flex-col gap-1.5"><span class="field-hint">Niveau (dB, 0 = très fort, −60 = très faible)</span>
+        <input type="number" id="level_db" min="-90" max="0" step="1" class="field-input"></label>
+      <p class="field-hint">Le micro ne s'ouvre que si tu l'autorises dans Activité → Réglages. Rien n'est enregistré ni envoyé : seul le niveau sonore est analysé.</p>
+    </div>
+
+    <div id="voice-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("mic", "w-4 h-4") }} Phrases à reconnaître</span>
+      <textarea id="phrases" rows="4" class="field-input font-mono" placeholder="ouvre le navigateur&#10;lance la musique"></textarea>
+      <select id="match" class="field-input"><option value="contains">La phrase contient…</option><option value="exact">Phrase exacte</option><option value="fuzzy">Approximative (tolère les erreurs)</option></select>
+      <p class="field-hint">Une phrase par ligne. Reconnaissance hors ligne (Vosk). Variables : <code class="font-mono text-accent">{{ "{{ gesture.text }}" }}</code> et <code class="font-mono text-accent">{{ "{{ gesture.value }}" }}</code> (un nombre dit, ex. « volume soixante »).</p>
+    </div>
+
+    <div id="fingerprint-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("fingerprint", "w-4 h-4") }} Empreinte</span>
+      <select id="result" class="field-input"><option value="match">Doigt reconnu</option><option value="no_match">Doigt inconnu</option><option value="any">Les deux</option></select>
+      <input id="finger" class="field-input" maxlength="40" placeholder="Doigt précis (ex : right-index-finger), vide = n'importe lequel">
+      <p class="field-hint">Linux : lecteur géré par <b>fprintd</b>. Windows : Windows Hello ne permet pas l'écoute continue ; utilise plutôt l'étape de workflow « Vérifier mon identité ».</p>
+    </div>
+
+    <div id="device-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("usb", "w-4 h-4") }} Événement matériel</span>
+      <select id="event" class="field-input">
+        <option value="usb_plugged">USB branché</option><option value="usb_unplugged">USB débranché</option>
+        <option value="bluetooth_connected">Bluetooth connecté</option><option value="bluetooth_disconnected">Bluetooth déconnecté</option>
+        <option value="power_plugged">Secteur branché</option><option value="power_unplugged">Secteur débranché</option>
+        <option value="lid_closed">Capot fermé</option><option value="lid_opened">Capot ouvert</option>
+        <option value="wifi_connected">Wi-Fi connecté</option><option value="wifi_disconnected">Wi-Fi déconnecté</option></select>
+      <input id="device_match" class="field-input" maxlength="80" placeholder="Nom ou identifiant contient… (optionnel)">
+      <p class="field-hint">Variable : <code class="font-mono text-accent">{{ "{{ gesture.device }}" }}</code>.</p>
+    </div>
+
+    <div id="sensor-panel" class="hidden flex flex-col gap-3 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("thermometer", "w-4 h-4") }} Capteur à seuil</span>
+      <select id="metric" class="field-input"></select>
+      <input id="metric_arg" class="field-input font-mono hidden">
+      <div class="flex items-center gap-2"><select id="op" class="field-input w-20"></select>
+        <input id="sensor_value" type="number" step="any" class="field-input"><select id="sensor_bool" class="field-input hidden"><option value="true">oui</option><option value="false">non</option></select>
+        <span id="metric-unit" class="text-xs text-on-surface-variant font-mono"></span></div>
+      <select id="edge" class="field-input"><option value="rising">Une fois, quand le seuil est franchi</option><option value="level">En continu tant que c'est vrai (avec la pause)</option></select>
+      <p class="field-hint">Capteur absent = jamais déclenché. Gaz, humidité, mouvement PIR : déclare un capteur externe (Arduino/ESP32) dans Activité → Capteurs.</p>
+    </div>
+
+    <div id="draw-options" class="hidden flex flex-col gap-4 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("pencil", "w-4 h-4") }} Dessin dans l'air</span>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="flex flex-col gap-1.5"><span class="field-hint">Symboles</span>
+          <select id="charset" class="field-input"><option value="digits">Chiffres 0-9</option><option value="shapes">Formes</option><option value="all">Chiffres et formes</option></select></label>
+        <label class="flex flex-col gap-1.5"><span class="field-hint">Reconnaissance</span>
+          <select id="recognizer" class="field-input"><option value="local">Locale (rapide, hors ligne)</option><option value="auto">Locale, puis IA si incertain</option><option value="ai">IA (vision)</option></select></label>
+        <label class="flex flex-col gap-1.5"><span class="field-hint">Stylo</span>
+          <select id="pen" class="field-input"><option value="index">Index seul levé</option><option value="pinch">Pincement pouce + index</option><option value="any">Index de n'importe quelle main</option></select></label>
+        <label class="flex flex-col gap-1.5"><span class="field-hint">Fin du dessin après (ms)</span>
+          <input type="number" id="idle_ms" min="300" max="5000" step="100" class="field-input"></label>
+      </div>
+      <label class="flex flex-col gap-1.5"><span class="field-hint">Confiance minimale : <b id="conf-label">70 %</b></span>
+        <input type="range" id="min_confidence" min="0.3" max="0.99" step="0.01" class="w-full"></label>
+      <div class="flex flex-col gap-1.5"><span class="field-hint">Symboles acceptés <span class="text-on-surface-variant/70">(aucun coché = tous ceux du jeu)</span></span>
+        <div id="labels" class="flex flex-wrap gap-1.5"></div></div>
+      <div class="border border-outline rounded-lg p-3 space-y-2">
+        <div class="text-sm font-medium flex items-center gap-2">{{ icon("sparkles", "w-4 h-4") }} Apprendre un tracé personnalisé</div>
+        <p class="field-hint">Dessine ton propre symbole devant la caméra, puis donne-lui un nom : il sera reconnu comme les autres.</p>
+        <div class="flex gap-2">
+          <input id="learn-name" class="field-input flex-1" maxlength="30" placeholder="Nom du symbole (ex : rond-barre)">
+          <button type="button" id="btn-learn" class="btn-secondary">{{ icon("circle-dot", "w-4 h-4") }} Apprendre</button>
+        </div>
+        <div id="custom-list" class="flex flex-wrap gap-1.5"></div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4 border-t border-outline pt-5">
+      <label id="threshold-field" class="flex flex-col gap-1.5">
+        <span class="field-label flex items-center gap-2">{{ icon("sliders-horizontal", "w-4 h-4") }} Sensibilité (seuil)</span>
+        <div class="flex items-center gap-3">
+          <input type="range" id="threshold-range" min="0.01" max="0.6" step="0.01" class="flex-1">
+          <input type="number" id="threshold" step="0.01" min="0.01" max="2" class="field-input w-24">
+        </div>
+        <span class="field-hint">Plus bas = plus strict, plus haut = plus tolérant.</span>
+      </label>
+
+      <label id="hold-field" class="flex flex-col gap-1.5">
+        <span class="field-label flex items-center gap-2">{{ icon("timer", "w-4 h-4") }} Durée de tenue de la pose</span>
+        <div class="flex items-center gap-3">
+          <input type="range" id="hold-range" min="0" max="3000" step="10" class="flex-1">
+          <div class="relative w-28">
+            <input type="number" id="hold_ms" min="0" max="10000" step="10" class="field-input pr-9">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant font-mono">ms</span>
+          </div>
+        </div>
+        <span class="field-hint" id="hold-hint"></span>
+      </label>
+
+      <div id="sequence-info" class="hidden bg-surface-low border border-outline rounded-lg p-3 text-sm space-y-1">
+        <div class="flex items-center gap-2">{{ icon("route", "w-4 h-4") }} <span id="sequence-duration"></span></div>
+        <div class="field-hint" id="sequence-frames"></div>
+      </div>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="field-label flex items-center gap-2">{{ icon("clock", "w-4 h-4") }} Pause après déclenchement</span>
+        <div class="flex items-center gap-3">
+          <div class="relative w-32">
+            <input type="number" id="cooldown_seconds" min="0" max="86400" step="0.5" class="field-input pr-8">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant font-mono">s</span>
+          </div>
+          <span class="field-hint" id="cooldown-hint"></span>
+        </div>
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-3 border-t border-outline pt-5">
+      <div class="flex items-center justify-between">
+        <span class="field-label flex items-center gap-2">{{ icon("gauge", "w-4 h-4") }} Conditions en plus du geste</span>
+        <button type="button" id="btn-add-cond" class="btn-secondary py-1.5 text-xs">{{ icon("plus", "w-4 h-4") }} Ajouter</button>
+      </div>
+      <div id="cond-mode-row" class="hidden flex items-center gap-2 text-sm">Déclencher si
+        <select id="conditions_mode" class="field-input w-auto py-1"><option value="all">toutes</option><option value="any">au moins une</option></select> condition(s) sont vraies.</div>
+      <div id="conditions" class="space-y-2"></div>
+      <p class="field-hint" id="cond-empty">Aucune condition : le geste se déclenche toujours. Exemples : allumé depuis 10 min, CPU &lt; 70 %, température &lt; 50 °C, un processus ouvert…</p>
+    </div>
+
+    <label class="flex flex-col gap-1.5 border-t border-outline pt-5">
+      <span class="field-label flex items-center gap-2">{{ icon("zap", "w-4 h-4") }} Action à déclencher</span>
+      <select id="action_id" class="field-input py-2.5">
+        <option value="">— aucune (à lier plus tard) —</option>
+        {% for a in actions %}
+        <option value="{{ a.id }}" {{ "selected" if editing and a.id == gesture.action_id else "" }}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <div class="flex gap-3 pt-4 border-t border-outline">
+      <button type="submit" id="btn-save" class="btn-primary flex-1" {{ "" if editing else "disabled" }}>
+        {{ icon("save", "w-[18px] h-[18px]") }} {{ "Enregistrer les modifications" if editing else "Enregistrer le geste" }}
+      </button>
+      <a href="/" class="btn-secondary">{{ icon("x", "w-[18px] h-[18px]") }} Annuler</a>
+    </div>
+  </form>
+</div>
+
+{% if editing %}
+<script type="application/json" id="gesture-data">{{ public_gesture(gesture) | tojson }}</script>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script type="application/json" id="gesture-options">{{ gesture_json | safe }}</script>
+<script src="{{ url_for('static', filename='js/gesture_form.js') }}"></script>
+{% endblock %}

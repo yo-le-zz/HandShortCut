@@ -1,4 +1,4 @@
-"""Genere toutes les icones de HandShortCut a partir de ``assets/logo.png``.
+"""Genere toutes les icones de PhysicalShortCut a partir de ``assets/logo.png``.
 
 Le logo source est un visuel 512x512 : bandes blanches en haut et en bas, bande noire
 au milieu, logo cyan au centre. Le script :
@@ -8,11 +8,11 @@ au milieu, logo cyan au centre. Le script :
    unie du logo : les bords restent lisses) ;
 3. le centre dans un carre avec une marge, puis le redimensionne (LANCZOS) ;
 4. ecrit :
-     assets/icons/handshortcut-<taille>.png   16 ... 512  (menu d'applications Linux, hicolor)
+     assets/icons/physicalshortcut-<taille>.png   16 ... 512  (menu d'applications Linux, hicolor)
      assets/icon.png                          256x256 RGBA (reference, dans les paquets)
      assets/icon.ico                          16/24/32/48/64/128/256 (Windows : exe, MSI, installateur)
-     src/handshortcut/webui/static/icon.png   favicon de l'interface (64x64)
-     src/handshortcut/webui/static/logo.png   logo de la barre laterale (128x128)
+     src/physicalshortcut/webui/static/icon.png   favicon de l'interface (64x64)
+     src/physicalshortcut/webui/static/logo.png   logo de la barre laterale (128x128)
 
 Usage : python assets/make_icons.py          (necessite Pillow et numpy)
 """
@@ -26,7 +26,7 @@ from PIL import Image
 
 ASSETS = Path(__file__).resolve().parent
 ROOT = ASSETS.parent
-STATIC = ROOT / "src" / "handshortcut" / "webui" / "static"
+STATIC = ROOT / "src" / "physicalshortcut" / "webui" / "static"
 
 SOURCE = ASSETS / "logo.png"
 LINUX_SIZES = (16, 22, 24, 32, 48, 64, 96, 128, 256, 512)
@@ -80,7 +80,7 @@ def main() -> None:
     icons_dir = ASSETS / "icons"
     icons_dir.mkdir(exist_ok=True)
     for size in LINUX_SIZES:
-        at(size).save(icons_dir / f"handshortcut-{size}.png", optimize=True)
+        at(size).save(icons_dir / f"physicalshortcut-{size}.png", optimize=True)
 
     at(256).save(ASSETS / "icon.png", optimize=True)
     master.save(

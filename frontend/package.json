@@ -1,9 +1,9 @@
 {
-  "name": "handshortcut-frontend",
+  "name": "physicalshortcut-frontend",
   "private": true,
-  "description": "Build des assets statiques de l'interface web (CSS Tailwind, icones Lucide, polices). Les fichiers generes sont commites : Node n'est PAS necessaire pour utiliser HandShortCut.",
+  "description": "Build des assets statiques de l'interface web (CSS Tailwind, icones Lucide, polices). Les fichiers generes sont commites : Node n'est PAS necessaire pour utiliser PhysicalShortCut.",
   "scripts": {
-    "build": "node build.mjs && tailwindcss -c tailwind.config.js -i input.css -o ../src/handshortcut/webui/static/app.css --minify"
+    "build": "node build.mjs && tailwindcss -c tailwind.config.js -i input.css -o ../src/physicalshortcut/webui/static/app.css --minify"
   },
   "devDependencies": {
     "@fontsource-variable/geist": "5.2.8",

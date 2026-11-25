@@ -2,8 +2,8 @@
 
 import json
 
-from handshortcut import bundle
-from handshortcut.cli import main
+from physicalshortcut import bundle
+from physicalshortcut.cli import main
 from tests.conftest import vec
 
 
@@ -27,7 +27,7 @@ def test_export_import_roundtrip(store, tmp_path):
 def test_import_rejects_invalid_bundle(store):
     import pytest
 
-    from handshortcut.schema import ValidationError
+    from physicalshortcut.schema import ValidationError
 
     with pytest.raises(ValidationError):
         bundle.import_bundle(store, {"format": "autre"})
@@ -37,7 +37,7 @@ def test_cli_export_then_import(store, tmp_path, capsys):
     _seed(store)
     out = tmp_path / "x.json"
     assert main(["--data-dir", str(store.data_dir), "export", str(out)]) == 0
-    assert json.loads(out.read_text(encoding="utf-8"))["format"] == "handshortcut-bundle"
+    assert json.loads(out.read_text(encoding="utf-8"))["format"] == "physicalshortcut-bundle"
     target = tmp_path / "t"
     assert main(["--data-dir", str(target), "import", str(out)]) == 0
 
@@ -62,10 +62,10 @@ def test_api_live_and_duplicate(client, api, store):
 
 
 def test_api_actions_test_validates(client, api, monkeypatch):
-    from handshortcut import action_executor
+    from physicalshortcut import action_executor
 
     ran = []
-    monkeypatch.setattr(action_executor, "run_action", ran.append)
+    monkeypatch.setattr(action_executor, "run_action_sync", lambda a, c=None: ran.append(a) or {"ok": True, "ms": 1, "vars": {}})
     ok = client.post("/api/actions/test", json={"name": "t", "steps": [{"type": "wait", "ms": 5}]}, headers=api)
     assert ok.status_code == 200 and len(ran) == 1
     bad = client.post("/api/actions/test", json={"name": "t", "steps": [{"type": "zzz"}]}, headers=api)

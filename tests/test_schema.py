@@ -1,7 +1,7 @@
 import pytest
 
-from handshortcut.action_executor import _HANDLERS
-from handshortcut.schema import (
+from physicalshortcut.action_executor import _HANDLERS
+from physicalshortcut.schema import (
     FRAME_VEC_LEN,
     STEP_FIELDS,
     ValidationError,

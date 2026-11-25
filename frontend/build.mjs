@@ -8,13 +8,13 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 // Icones construites dynamiquement (pas de nom litteral a detecter).
-const EXTRA_ICONS = ["circle-check", "circle-alert", "lightbulb", "loader-circle", "circle-dot", "square", "camera-off", "eye", "eye-off", "chevron-up", "chevron-down"];
-const staticDir = join(here, "..", "src", "handshortcut", "webui", "static");
+const EXTRA_ICONS = ["circle-check", "circle-alert", "lightbulb", "loader-circle", "circle-dot", "square", "camera-off", "eye", "eye-off", "chevron-up", "chevron-down", "fingerprint", "usb", "mic", "volume-2", "thermometer", "thermometer-sun", "fan", "laptop", "wifi", "sun", "move", "timer", "radio", "cable", "shield-check"];
+const staticDir = join(here, "..", "src", "physicalshortcut", "webui", "static");
 
 // Les icones sont detectees automatiquement dans les sources : un nom d'icone ajoute dans
 // un template, un fichier JS ou le catalogue d'etapes (steps.py) est inclus au prochain build.
 //   {{ icon("nom") }} | HSC.icon("nom") | icon: "nom" | icon="nom" | data-icon="nom"
-const root = join(here, "..", "src", "handshortcut");
+const root = join(here, "..", "src", "physicalshortcut");
 const sources = [];
 const walk = (dir) => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {

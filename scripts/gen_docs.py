@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from handshortcut.steps import CATEGORIES, STEPS, steps_in_category  # noqa: E402
+from physicalshortcut.steps import CATEGORIES, STEPS, steps_in_category  # noqa: E402
 
 BEGIN = "<!-- steps:begin (genere par scripts/gen_docs.py, ne pas modifier a la main) -->"
 END = "<!-- steps:end -->"

@@ -1,7 +1,7 @@
 """Etapes logiques, garde-fous et champs communs de l'executeur."""
 
-from handshortcut import action_executor as ax
-from handshortcut import platform_utils as pu
+from physicalshortcut import action_executor as ax
+from physicalshortcut import platform_utils as pu
 
 
 def _setup(monkeypatch, actions):

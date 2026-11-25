@@ -1,0 +1,13 @@
+[
+  {
+    "_comment": "Ceci est un GABARIT VIDE. Les vecteurs de landmarks (template / keyframes) sont propres à chaque main et ne peuvent pas être écrits à la main : va sur http://127.0.0.1:5678/gestures/new et enregistre le geste 'Domain Expansion' via la webcam (choisis 'sequence' si c'est un mouvement, ou 'static' si c'est une pose tenue). Ce fichier sert juste d'exemple de structure et de lien avec l'action 'gojo_domain_setup'.",
+    "id": "gojo_domain_expansion",
+    "name": "Domain Expansion (Gojo)",
+    "type": "sequence",
+    "threshold": 0.22,
+    "hold_frames": 8,
+    "cooldown_seconds": 15,
+    "action_id": "gojo_domain_setup",
+    "keyframes": []
+  }
+]

@@ -1,6 +1,6 @@
 import pytest
 
-from handshortcut.config_store import ConfigStore
+from physicalshortcut.config_store import ConfigStore
 
 
 class FakeEngine:
@@ -48,7 +48,7 @@ def stopped():
 
 @pytest.fixture
 def client(store, engine, stopped):
-    from handshortcut.webui.app import create_app
+    from physicalshortcut.webui.app import create_app
 
     app = create_app(engine, store, on_shutdown=stopped.set)
     app.testing = True
@@ -58,7 +58,7 @@ def client(store, engine, stopped):
 @pytest.fixture
 def api():
     """En-tetes exiges par la protection CSRF pour les ecritures."""
-    return {"X-HandShortCut": "1"}
+    return {"X-PhysicalShortCut": "1"}
 
 
 def vec(value=0.1, length=126):

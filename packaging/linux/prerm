@@ -1,8 +1,8 @@
 #!/bin/sh
 # $1 = "remove"/"upgrade" (deb) ; la logique rpm est dans le .spec.
 set -e
-/usr/bin/handshortcut stop >/dev/null 2>&1 || true   # libere les fichiers avant mise a jour/suppression
+/usr/bin/physicalshortcut stop >/dev/null 2>&1 || true   # libere les fichiers avant mise a jour/suppression
 if [ "$1" = "remove" ] && command -v systemctl >/dev/null 2>&1; then
-    systemctl --global disable handshortcut.service >/dev/null 2>&1 || true
+    systemctl --global disable physicalshortcut.service >/dev/null 2>&1 || true
 fi
 exit 0

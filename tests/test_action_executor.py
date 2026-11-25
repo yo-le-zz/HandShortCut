@@ -3,8 +3,8 @@ import json
 import threading
 import time
 
-from handshortcut import action_executor as ax
-from handshortcut import platform_utils as pu
+from physicalshortcut import action_executor as ax
+from physicalshortcut import platform_utils as pu
 
 
 def test_unknown_and_failing_steps_do_not_stop_the_action(monkeypatch, caplog):
@@ -17,7 +17,7 @@ def test_unknown_and_failing_steps_do_not_stop_the_action(monkeypatch, caplog):
             "steps": [{"type": "nope"}, {"type": "open_url"}, {"type": "wait", "ms": 1}, 7],
         }
     )
-    assert calls == [{"type": "wait", "ms": 1}]
+    assert [(c["type"], c["ms"]) for c in calls] == [("wait", 1)]
     assert "type inconnu" in caplog.text and "en erreur" in caplog.text
 
 

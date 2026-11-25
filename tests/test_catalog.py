@@ -5,12 +5,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-from handshortcut import action_executor as ax
-from handshortcut import steps
-from handshortcut.schema import STEP_FIELDS, validate_step
+from physicalshortcut import action_executor as ax
+from physicalshortcut import steps
+from physicalshortcut.schema import STEP_FIELDS, validate_step
 
 ROOT = Path(__file__).resolve().parent.parent
-STATIC = ROOT / "src" / "handshortcut" / "webui" / "static"
+STATIC = ROOT / "src" / "physicalshortcut" / "webui" / "static"
 
 
 def test_every_step_has_a_handler_and_vice_versa():
@@ -19,7 +19,7 @@ def test_every_step_has_a_handler_and_vice_versa():
 
 
 def test_catalogue_is_complete():
-    assert len(steps.STEPS) == 45
+    assert len(steps.STEPS) >= 58
     for spec in steps.STEPS.values():
         assert spec.category in steps.CATEGORY_BY_KEY
         assert spec.label and spec.description and spec.icon
@@ -41,9 +41,14 @@ def test_readme_steps_table_is_up_to_date():
     assert result.returncode == 0, result.stderr
 
 
+def _version() -> str:
+    match = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(encoding="utf-8"), re.M)
+    return match.group(1)
+
+
 def test_changelog_has_notes_for_current_version():
     result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "release_notes.py"), "1.0.0"],
+        [sys.executable, str(ROOT / "scripts" / "release_notes.py"), _version()],
         capture_output=True,
         encoding="utf-8",
     )

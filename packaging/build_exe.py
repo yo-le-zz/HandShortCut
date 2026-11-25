@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Compile HandShortCut en executable natif (Nuitka, mode standalone).
+"""Compile PhysicalShortCut en executable natif (Nuitka, mode standalone).
 
     uv run --group build python packaging/build_exe.py [--output build/exe] [--jobs N]
 
-Produit `<output>/handshortcut.dist/` : un dossier autonome (aucun Python requis
-sur la machine cible) contenant l'executable `handshortcut` (`handshortcut.exe`
+Produit `<output>/physicalshortcut.dist/` : un dossier autonome (aucun Python requis
+sur la machine cible) contenant l'executable `physicalshortcut` (`physicalshortcut.exe`
 sous Windows) avec toutes ses bibliotheques et donnees (MediaPipe, OpenCV...).
 Necessite un compilateur C (gcc/clang, ou MSVC/MinGW sous Windows) ; sous Linux
 aussi `patchelf`.
@@ -22,7 +22,7 @@ from pathlib import Path
 import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
-EXE_LINUX = "handshortcut-bin"
+EXE_LINUX = "physicalshortcut-bin"
 
 
 def project_version() -> str:
@@ -42,9 +42,9 @@ def main() -> int:
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
 
-    # Sous Linux le dossier de donnees `handshortcut/` du paquet entrerait en conflit
-    # avec un executable du meme nom : on le suffixe (le lien /usr/bin/handshortcut le masque).
-    exe_name = "handshortcut" if is_windows else EXE_LINUX
+    # Sous Linux le dossier de donnees `physicalshortcut/` du paquet entrerait en conflit
+    # avec un executable du meme nom : on le suffixe (le lien /usr/bin/physicalshortcut le masque).
+    exe_name = "physicalshortcut" if is_windows else EXE_LINUX
 
     cmd = [
         sys.executable,
@@ -53,17 +53,17 @@ def main() -> int:
         "--mode=standalone",
         f"--output-dir={out}",
         f"--output-filename={exe_name}",
-        "--include-package=handshortcut",
-        "--include-package-data=handshortcut",
-        "--include-distribution-metadata=handshortcut",
+        "--include-package=physicalshortcut",
+        "--include-package-data=physicalshortcut",
+        "--include-distribution-metadata=physicalshortcut",
         "--include-package-data=mediapipe",  # modeles .tflite / graphes .binarypb
         "--nofollow-import-to=jax,jaxlib,tkinter,pytest,matplotlib.tests,numpy.tests",
         "--assume-yes-for-downloads",
         "--remove-output",
         f"--jobs={args.jobs}",
-        "--product-name=HandShortCut",
+        "--product-name=PhysicalShortCut",
         f"--product-version={version}",
-        "--file-description=HandShortCut",
+        "--file-description=PhysicalShortCut",
         "--company-name=yolezz",
     ]
     if is_windows:
@@ -78,9 +78,9 @@ def main() -> int:
     subprocess.run(cmd, check=True, cwd=ROOT)
 
     dist = out / "entry.dist"
-    final = out / "handshortcut.dist"
+    final = out / "physicalshortcut.dist"
     dist.rename(final)
-    exe = final / ("handshortcut.exe" if is_windows else EXE_LINUX)
+    exe = final / ("physicalshortcut.exe" if is_windows else EXE_LINUX)
     if not exe.exists():
         print(f"Erreur : {exe} introuvable apres compilation.", file=sys.stderr)
         return 1

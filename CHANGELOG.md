@@ -3,6 +3,76 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) ; versions
 [SemVer](https://semver.org/lang/fr/).
 
+## 2.0.0 - 2026-11-25
+
+Créé par **yolezz**. **HandShortCut devient PhysicalShortCut** (explication : [RENAMING.md](RENAMING.md)).
+
+### Nouveautés
+- **Nouveau nom** : PhysicalShortCut. Paquet `physicalshortcut`, commande `physicalshortcut`, variables
+  `PHYSICALSHORTCUT_*`, paquets, service, icônes, documentation : tout est renommé. Les anciennes variables
+  `HANDSHORTCUT_*` fonctionnent encore, les données de l'ancien dossier sont **copiées** au premier lancement
+  (sans rien supprimer) et l'ancien démarrage automatique est nettoyé.
+- **Son** : claquement simple, double, triple, bruit fort, silence (micro, analyse en mémoire).
+- **Voix** : commandes parlées **hors ligne** (Vosk), phrases exactes, contenues ou approximatives ;
+  le texte et un nombre dit (« volume soixante ») sont transmis au workflow.
+- **Empreinte digitale** : Linux via fprintd (reconnu / inconnu, doigt précis). Windows : étape de workflow
+  **Vérifier mon identité** (Windows Hello / fprintd) avec branches vrai / faux.
+- **Branchements** : USB, Bluetooth, secteur, capot, Wi-Fi.
+- **Capteur à seuil** : lumière ambiante, accéléromètre (secousse), températures (CPU, GPU, disque, pièce),
+  ventilateur, inactivité, niveau sonore, capteur externe. Déclenchement une fois ou en continu, durée de tenue.
+- **Capteurs externes** (Arduino, ESP32, micro:bit par port série, ou commande) pour ce qu'un PC n'a pas :
+  gaz, humidité, mouvement PIR…
+- **Faisabilité honnête** : la page Activité liste ce que *ta* machine possède ; [docs/CAPTEURS.md](docs/CAPTEURS.md)
+  détaille chaque capteur par système.
+- **Vie privée** : le micro est désactivé par défaut, et n'est ouvert que si tu l'autorises et qu'un
+  déclencheur Son ou Voix existe. Chaque capteur n'est lu que si un déclencheur l'utilise.
+- 10 nouvelles mesures utilisables aussi dans les conditions des gestes ; 9 nouveaux modèles
+  (clap → pause, commande vocale, USB, gaz, secousse, empreinte…) ; 1 nouvelle étape (60 au total).
+- Extras d'installation : `physicalshortcut[audio]`, `[serial]`, `[sensors]`.
+
+### Changements
+- `sounddevice` n'est plus exclu de l'installation (il sert au micro).
+- Les anciens gestes (statique, mouvement, doigts, comptage, dessin) et les workflows existants fonctionnent sans changement.
+
+### Non testé ici
+- Matériel réel (micro, lecteur d'empreintes, capteurs IIO, port série), Windows Hello, paquets MSI / Nuitka avec les extras.
+
+## 1.1.0 - 2026-11-24
+
+Créé par **yolezz**.
+
+### Nouveautés
+- **Workflows en graphe** : les actions deviennent de vrais workflows de noeuds reliés par des ports
+  (`suite`, `vrai`, `faux`, `pour chaque`, `terminé`, `erreur`). Éditeur visuel : glisser les noeuds,
+  tirer un lien depuis un port, liens de données en pointillés, inspecteur, test avec trace par noeud.
+  Les anciennes actions (liste d'étapes) continuent de fonctionner et s'ouvrent en graphe.
+- **Données partagées entre noeuds** : la sortie d'un noeud nommé est une variable, utilisable partout
+  avec `{{ nom }}` (filtres `upper`, `int`, `json`, `regex`…, calculs, conditions). Exemple :
+  *lire un fichier → l'écrire ailleurs*. Moteur d'expressions sécurisé (pas d'`eval`).
+- **15 nouveaux types d'étapes** : presse-papiers (lecture), variable, message de journal, JSON, regex,
+  mesure système, info mains, question à l'IA, Si (valeur), Si (système), Pour chaque, lancer un workflow
+  avec arguments, arrêter le workflow… (59 au total). Les lectures de fichier, requêtes HTTP, commandes
+  (`capture`) et captures renvoient désormais leur résultat.
+- **Dessiner dans l'air** : trace un chiffre (0-9) ou une forme (cercle, carré, triangle, coche, étoile,
+  cœur…) avec l'index ; reconnaissance locale hors ligne (nuage de points), IA de vision optionnelle
+  (Ollama ou tout service compatible OpenAI), tracés personnalisés à apprendre. Le résultat est passé au
+  workflow (`{{ gesture.value }}`, `{{ gesture.label }}`).
+- **Nouveaux gestes** : *doigts levés* (sans enregistrement), *compter les doigts* (valeur transmise),
+  **deux mains** pour les poses et les comptages.
+- **Conditions en plus du geste** : allumé depuis X minutes, CPU < 70 %, température < 50 °C, RAM,
+  disque, batterie, heure, jour, processus lancé, fenêtre ouverte, fichier présent… (mode *toutes* / *une*).
+  Les gestes bloqués expliquent pourquoi dans l'activité.
+- **Retour visuel** : bulles à l'écran quand un geste est reconnu, bloqué ou qu'un workflow échoue,
+  notification du bureau (réglable), page **Activité** avec le détail de chaque noeud exécuté.
+- **Import intelligent** : l'export mémorise le système d'origine (ou le détecte) ; à l'import, chemins,
+  variables d'environnement et programmes courants sont convertis Windows ↔ Linux, le non-convertible est
+  réservé à son système, et un rapport est affiché.
+- **20 modèles** de workflows et de gestes prêts à installer (page *Modèles*).
+- Crédits « Créé par yolezz » (interface, `--version`, paquets).
+
+### Corrections
+- Les workflows ne s'arrêtent plus à la première erreur masquée : chaque noeud reçoit ses erreurs.
+
 ## 1.0.0 - 2026-11-23
 
 Première version publique.

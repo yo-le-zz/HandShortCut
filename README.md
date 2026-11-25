@@ -1,8 +1,10 @@
-# HandShortCut
+# PhysicalShortCut
 
-<p align="center"><img src="assets/icon.png" alt="HandShortCut" width="96"></p>
+<p align="center"><img src="assets/icon.png" alt="PhysicalShortCut" width="96"></p>
 
-Détecte des gestes de la main via ta webcam (en tâche de fond) et déclenche des
+Transforme **un événement physique** (un geste de la main, un claquement, une phrase, une empreinte,
+un branchement USB, une secousse, un capteur de gaz…) en **action** sur ton ordinateur. Ex-HandShortCut :
+voir [RENAMING.md](RENAMING.md). Les gestes de la main (webcam, en tâche de fond) déclenchent des
 actions personnalisées : lancer une application, la placer sur tel écran, envoyer un
 raccourci clavier, piloter le volume, ouvrir une URL, appeler une API, exécuter une
 commande... Le tout configurable depuis une interface web locale, **sans écrire une
@@ -17,8 +19,13 @@ Webcam --> MediaPipe (points de la main) --> comparaison aux gestes enregistrés
                                           geste reconnu -> action liée
 ```
 
-- Un **geste** est une **pose statique** (à tenir quelques instants) ou une **séquence** (mouvement).
-- Une **action** est une liste d'étapes exécutées dans l'ordre, que tu peux **réordonner par glisser-déposer**.
+- Un **geste** est une **pose enregistrée**, un **mouvement**, des **doigts levés**, un **comptage** de doigts
+  ou un **dessin dans l'air** ; à une ou **deux mains**, avec des **conditions système** en plus.
+- Un déclencheur peut aussi être un **son** (claquements), une **phrase** (voix hors ligne), une **empreinte**,
+  un **branchement** (USB, Bluetooth, secteur, capot, Wi-Fi) ou un **capteur** à seuil (lumière, secousse,
+  températures, Arduino/ESP32…). Ce que ta machine possède vraiment : [docs/CAPTEURS.md](docs/CAPTEURS.md).
+- Une **action** est un **workflow** : un graphe de noeuds reliés (branches, boucles, erreurs) où les
+  données circulent d'un noeud à l'autre.
 - Tout se pilote depuis **http://127.0.0.1:5678** (accessible uniquement depuis ta machine).
 - `gestures.json` et `actions.json` sont **rechargés à chaud** (via l'interface ou à la main).
 
@@ -27,51 +34,51 @@ Webcam --> MediaPipe (points de la main) --> comparaison aux gestes enregistrés
 ## Installation
 
 L'application est compilée en **exécutable natif** (Nuitka) : aucun Python à installer.
-Les paquets sont dans les [Releases](https://github.com/yo-le-zz/HandShortCut/releases) ;
+Les paquets sont dans les [Releases](https://github.com/yo-le-zz/PhysicalShortCut/releases) ;
 chaque release fournit un fichier `SHA256SUMS` pour vérifier les téléchargements.
 
 ### Fedora / RHEL (.rpm)
 
 ```bash
-sudo dnf install ./handshortcut-1.0.0-1.x86_64.rpm
+sudo dnf install ./physicalshortcut-2.0.0-1.x86_64.rpm
 ```
 
 ### Debian / Ubuntu (.deb)
 
 ```bash
-sudo apt install ./handshortcut_1.0.0_amd64.deb
+sudo apt install ./physicalshortcut_2.0.0_amd64.deb
 ```
 
 Dans les deux cas : service `systemd --user` activé (démarrage à la connexion), entrée
-**HandShortCut** dans le menu d'applications (avec son icône), commande `handshortcut`.
+**PhysicalShortCut** dans le menu d'applications (avec son icône), commande `physicalshortcut`.
 
 ```bash
-handshortcut --open        # ou : systemctl --user start handshortcut
-handshortcut doctor        # vérifie caméra, outils manquants, session graphique
+physicalshortcut --open        # ou : systemctl --user start physicalshortcut
+physicalshortcut doctor        # vérifie caméra, outils manquants, session graphique
 ```
 
-Désinstallation : `sudo dnf remove handshortcut` / `sudo apt remove handshortcut`.
+Désinstallation : `sudo dnf remove physicalshortcut` / `sudo apt remove physicalshortcut`.
 
 ### Windows (.msi ou .exe)
 
 | Fichier | Usage |
 |---|---|
-| `HandShortCut-1.0.0-x64.msi` | Paquet MSI : double-clic, déploiement en entreprise (GPO, Intune), `msiexec /i HandShortCut-1.0.0-x64.msi /qn` |
-| `HandShortCut-Setup-1.0.0.exe` | Installateur classique (Inno Setup), options de démarrage automatique et raccourci bureau |
+| `PhysicalShortCut-2.0.0-x64.msi` | Paquet MSI : double-clic, déploiement en entreprise (GPO, Intune), `msiexec /i PhysicalShortCut-2.0.0-x64.msi /qn` |
+| `PhysicalShortCut-Setup-2.0.0.exe` | Installateur classique (Inno Setup), options de démarrage automatique et raccourci bureau |
 
 Avec le MSI, `AUTOSTART=1` active le démarrage avec Windows :
-`msiexec /i HandShortCut-1.0.0-x64.msi /qn AUTOSTART=1`. Aucune connexion internet n'est
+`msiexec /i PhysicalShortCut-2.0.0-x64.msi /qn AUTOSTART=1`. Aucune connexion internet n'est
 nécessaire : l'exécutable est embarqué. Désinstallation : Paramètres > Applications.
 
 ### Avec uv (toutes plateformes, sans paquet)
 
 ```bash
 uv tool install --python 3.12 .      # depuis le dossier du projet
-handshortcut --open
+physicalshortcut --open
 ```
 
 Sous Linux, installe aussi `wmctrl` (ou `xdotool`), `libgl1`, `libglib2.0-0` ; recommandés :
-`playerctl`, `xclip`/`wl-clipboard`, `libnotify`, `brightnessctl`. `handshortcut doctor`
+`playerctl`, `xclip`/`wl-clipboard`, `libnotify`, `brightnessctl`. `physicalshortcut doctor`
 indique ce qui manque pour chaque étape.
 
 > **Python ≤ 3.12** : `mediapipe==0.10.14` n'a pas de wheel pour 3.13+ et les versions
@@ -82,25 +89,28 @@ indique ce qui manque pour chaque étape.
 ## Utilisation
 
 ```text
-handshortcut [--port 5678] [--camera 0] [--data-dir DOSSIER] [--open] [-v]
-handshortcut stop                 arrête l'instance en cours
-handshortcut paths                dossiers de données / journaux / exemples
-handshortcut doctor               diagnostic de l'environnement
-handshortcut export [fichier]     exporte gestes + actions (JSON portable)
-handshortcut import [--replace] fichier
-handshortcut autostart on|off|status   démarrage à la connexion (XDG / registre Windows)
+physicalshortcut [--port 5678] [--camera 0] [--data-dir DOSSIER] [--open] [-v]
+physicalshortcut stop                 arrête l'instance en cours
+physicalshortcut paths                dossiers de données / journaux / exemples
+physicalshortcut doctor               diagnostic de l'environnement
+physicalshortcut export [fichier]     exporte gestes + actions (JSON portable)
+physicalshortcut import [--replace] fichier
+physicalshortcut autostart on|off|status   démarrage à la connexion (XDG / registre Windows)
 ```
 
-Variables d'environnement : `HANDSHORTCUT_PORT`, `HANDSHORTCUT_CAMERA`, `HANDSHORTCUT_DATA_DIR`.
+Variables d'environnement : `PHYSICALSHORTCUT_PORT`, `PHYSICALSHORTCUT_CAMERA`, `PHYSICALSHORTCUT_DATA_DIR`.
 
 | | Linux | Windows |
 |---|---|---|
-| Données (`gestures.json`, `actions.json`) | `~/.local/share/handshortcut` | `%LOCALAPPDATA%\HandShortCut` |
-| Journal | `~/.local/state/handshortcut/log` | `%LOCALAPPDATA%\HandShortCut\Logs` |
+| Données (`gestures.json`, `actions.json`) | `~/.local/share/physicalshortcut` | `%LOCALAPPDATA%\PhysicalShortCut` |
+| Journal | `~/.local/state/physicalshortcut/log` | `%LOCALAPPDATA%\PhysicalShortCut\Logs` |
 
 Les gestes enregistrés utilisent des coordonnées normalisées : un export fait sous
-Windows s'importe tel quel sous Linux (et inversement), via l'interface (**Exporter** /
-**Importer**) ou en ligne de commande.
+Windows s'importe sous Linux (et inversement), via l'interface (**Exporter** / **Importer**) ou en
+ligne de commande. À l'import, le système d'origine est détecté et les **chemins, variables
+d'environnement et programmes courants** sont convertis (`notepad` ↔ `gnome-text-editor`,
+`C:\Users\moi\Docs` ↔ `~/Docs`…) ; les commandes non convertibles sont réservées à leur système
+d'origine et un rapport détaille les changements.
 
 ### Créer et modifier un geste
 
@@ -113,11 +123,44 @@ Windows s'importe tel quel sous Linux (et inversement), via l'interface (**Expor
 à la cadence réelle de ta caméra). Exemple : *tenue 0,27 s (270 ms) ≈ 8 images à 29,8 images/s*.
 Une jauge **en direct** montre la distance au geste et le seuil, pour régler sans deviner.
 
-### Créer une action
+### Gestes : doigts, comptage, dessin, deux mains
 
-**Nouvelle action** ouvre l'éditeur : une palette par catégorie (recherche + icônes + exemples),
-des cartes d'étapes dépliables, **glisser-déposer** (ou flèches) pour changer l'ordre d'exécution,
-bouton de test, duplication. Chaque étape accepte aussi :
+| Type | Principe | Valeur transmise |
+|---|---|---|
+| Pose enregistrée / mouvement | comparée à ton enregistrement (1 ou 2 mains pour les poses) | – |
+| Doigts levés | tu choisis levé / baissé / peu importe par doigt, pour 1 ou 2 mains | – |
+| Compter les doigts | intervalle min–max, 1 main, 2 mains ou total | `{{ gesture.value }}` = nombre |
+| Dessiner dans l'air | index levé = stylo ; chiffres 0-9, formes, tracés à toi | `{{ gesture.value }}` (chiffre) / `{{ gesture.label }}` |
+
+Le dessin se reconnaît **en local** (rapide, hors ligne). Pour des dessins libres, configure une IA dans
+**Activité & réglages** : toute API compatible OpenAI (Ollama par défaut sur `127.0.0.1:11434`). Tu
+indiques le *nom* de la variable d'environnement qui contient la clé, jamais la clé elle-même.
+
+**Conditions** : en plus du geste, exige par exemple *uptime ≥ 30 min*, *CPU < 70 %*, *température < 50 °C*
+(ignorable si le capteur manque), *sur secteur*, *processus lancé*… Un geste bloqué le dit dans l'activité.
+
+### Créer un workflow
+
+Les noeuds sans lien entrant démarrent à la reconnaissance du geste. Tire d'un point coloré vers un autre
+noeud pour les relier : `suite`, `vrai` / `faux` (Si), `pour chaque` / `terminé` (boucle), `erreur`.
+Donne un **nom** à un noeud : sa sortie devient la variable `{{ nom }}` pour tous les noeuds suivants.
+
+```text
+Lire le fichier  (nom : contenu) ──►  Écrire le fichier  (contenu : {{ contenu | upper }})
+Dessin « 7 »  ──►  Volume = {{ gesture.value * 10 }} %
+```
+
+Variables prêtes à l'emploi : `gesture.value`, `gesture.name`, `gesture.label`, `now.time`,
+`system.cpu_percent`, `system.uptime_minutes`, `args`, `last`. Filtres : `upper`, `lower`, `trim`, `int`,
+`round`, `split`, `join`, `json`, `regex`, `default`, `truncate`…
+
+La page **Modèles** installe 20 workflows complets avec leurs gestes (volume au doigt, volume en dessinant
+un chiffre, capture datée, résumé IA du presse-papiers…).
+
+### Créer une action (éditeur)
+
+**Nouveau workflow** ouvre l'éditeur visuel : une palette par catégorie (recherche + icônes), le graphe,
+un inspecteur à droite, un bouton de test qui affiche le résultat de chaque noeud. Chaque étape accepte aussi :
 
 - `wait_ms` : attente après l'étape ;
 - `only_on` : `windows` ou `linux` (une même action peut contenir des variantes par système) ;
@@ -128,12 +171,12 @@ Les chemins acceptent `~`, `$VAR` et `%VAR%`. Les noms de touches sont normalis�
 
 ### Étapes disponibles
 
-Générée depuis le catalogue (`src/handshortcut/steps.py`), source unique de l'interface,
+Générée depuis le catalogue (`src/physicalshortcut/steps.py`), source unique de l'interface,
 de la validation et de cette documentation.
 
 <!-- steps:begin (genere par scripts/gen_docs.py, ne pas modifier a la main) -->
 
-45 types d'étapes, regroupés en 7 catégories.
+60 types d'étapes, regroupés en 9 catégories.
 
 **Fenêtres & applications** : Lancer, placer et piloter les fenêtres
 
@@ -164,6 +207,7 @@ de la validation et de cette documentation.
 | `mouse_scroll` | Fait défiler la fenêtre active. | `direction`, `amount` | Windows + Linux |
 | `clipboard_set` | Place un texte dans le presse-papiers. | `text` | Windows + Linux |
 | `clipboard_get_and_type` | Tape au clavier le contenu actuel du presse-papiers. | _aucun_ | Windows + Linux |
+| `clipboard_get` | Récupère le texte du presse-papiers et le donne aux noeuds suivants. | _aucun_ | Windows + Linux |
 
 **Média & audio** : Lecture, volume, sons et voix
 
@@ -179,7 +223,7 @@ de la validation et de cette documentation.
 | Type | Rôle | Champs | Plateformes |
 |---|---|---|---|
 | `open_url` | Ouvre une adresse dans le navigateur par défaut. | `url` | Windows + Linux |
-| `http_request` | Envoie une requête HTTP (webhook, domotique, API...). Délai maximum : 5 s. | `method`, `url`, `body` | Windows + Linux |
+| `http_request` | Envoie une requête HTTP (webhook, domotique, API...) et renvoie la réponse aux noeuds suivants. | `method`, `url`, `body`, `headers`, `timeout_s` | Windows + Linux |
 | `websocket_send` | Ouvre une connexion WebSocket, envoie un message puis la referme. | `url`, `message` | Windows + Linux |
 
 **Fichiers** : Écrire, copier, déplacer, capturer
@@ -187,7 +231,7 @@ de la validation et de cette documentation.
 | Type | Rôle | Champs | Plateformes |
 |---|---|---|---|
 | `file_write` | Crée ou remplace un fichier texte. | `path`, `content`, `append` | Windows + Linux |
-| `file_read` | Lit un fichier texte (le résultat est ecrit dans le journal). | `path` | Windows + Linux |
+| `file_read` | Lit un fichier texte et donne son contenu aux noeuds suivants (ex. Lire un fichier -> Écrire un fichier). | `path` | Windows + Linux |
 | `file_delete` | Supprime définitivement un fichier. | `path` | Windows + Linux |
 | `file_copy` | Copie un fichier (les métadonnées sont conservées). | `source`, `destination` | Windows + Linux |
 | `file_move` | Déplace ou renomme un fichier ou un dossier. | `source`, `destination` | Windows + Linux |
@@ -198,32 +242,55 @@ de la validation et de cette documentation.
 
 | Type | Rôle | Champs | Plateformes |
 |---|---|---|---|
-| `run_shell` | Exécute une commande dans le shell, sans attendre sa fin. | `cmd` | Windows + Linux |
-| `kill_process` | Arrête les processus dont le nom contient le texte donne (jamais HandShortCut lui-même). | `name` | Windows + Linux |
+| `run_shell` | Exécute une commande dans le shell (en arrière-plan, ou en attendant sa fin pour récupérer sa sortie). | `cmd`, `capture`, `timeout_s` | Windows + Linux |
+| `kill_process` | Arrête les processus dont le nom contient le texte donne (jamais PhysicalShortCut lui-même). | `name` | Windows + Linux |
 | `notify` | Affiche une notification système. | `title`, `message` | Windows + Linux |
 | `change_brightness` | Définit la luminosité de l'écran (0 à 100 %). | `level` | Windows + Linux |
 | `change_wallpaper` | Applique une image comme fond d'écran. | `path` | Windows + Linux |
 | `set_theme` | Bascule le thème du système entre clair et sombre. | `mode` | Windows + Linux |
 | `power_action` | Verrouille, met en veille, ferme la session, redémarre ou éteint l'ordinateur. | `action` | Windows + Linux |
+| `system_metric` | Lit l'uptime, l'usage ou la température du CPU, la RAM, la batterie... et la donne aux noeuds suivants. | `metric`, `arg` | Windows + Linux |
 
-**Logique & contrôle** : Attentes, conditions et répétitions
+**Données & variables** : Variables, extraction, journal : relier les noeuds entre eux
+
+| Type | Rôle | Champs | Plateformes |
+|---|---|---|---|
+| `set_variable` | Calcule une valeur (texte, nombre, formule) et la range sous le nom du noeud. | `value`, `variable` | Windows + Linux |
+| `log_message` | Écrit un message dans le journal et dans l'activité (utile pour vérifier ce que transporte un lien). | `message`, `level` | Windows + Linux |
+| `parse_json` | Lit un texte JSON (ex. réponse d'une API) et extrait une valeur par son chemin. | `source`, `path` | Windows + Linux |
+| `regex_extract` | Cherche un motif (expression régulière) dans un texte et renvoie la correspondance. | `source`, `pattern`, `group` | Windows + Linux |
+
+**IA & analyse** : Questions à une IA, analyse des mains
+
+| Type | Rôle | Champs | Plateformes |
+|---|---|---|---|
+| `ai_ask` | Pose une question à une IA (Ollama, OpenAI, LM Studio...) avec, si tu veux, l'image de la caméra. | `prompt`, `with_image`, `system`, `model`, `base_url`, `timeout_s` | Windows + Linux |
+| `hand_info` | Compte les doigts levés des mains visibles à cet instant. | _aucun_ | Windows + Linux |
+
+**Logique & contrôle** : Attentes, conditions, boucles et sous-workflows
 
 | Type | Rôle | Champs | Plateformes |
 |---|---|---|---|
 | `wait` | Attend un certain temps avant l'étape suivante. | `ms` | Windows + Linux |
-| `if_window_exists` | Exécute une autre action si une fenêtre est ouverte (sinon l'action alternative, si définie). | `title_contains`, `action_id`, `else_action_id` | Windows + Linux |
-| `if_process_running` | Exécute une autre action si un processus est actif (sinon l'action alternative, si définie). | `name`, `action_id`, `else_action_id` | Windows + Linux |
-| `repeat` | Exécute une autre action plusieurs fois de suite. | `count`, `action_id`, `delay_ms` | Windows + Linux |
+| `if_window_exists` | Branche « Vrai » si une fenêtre est ouverte, « Faux » sinon (ou exécute un sous-workflow). | `title_contains`, `action_id`, `else_action_id` | Windows + Linux |
+| `if_process_running` | Branche « Vrai » si un processus est actif, « Faux » sinon (ou exécute un sous-workflow). | `name`, `action_id`, `else_action_id` | Windows + Linux |
+| `require_auth` | Demande l'empreinte (Linux : fprintd) ou Windows Hello, puis branche « Vrai » si c'est accepté, « Faux » sinon. | `timeout`, `action_id`, `else_action_id` | Windows + Linux |
+| `repeat` | Exécute un autre workflow plusieurs fois de suite (variable loop.index). | `count`, `action_id`, `delay_ms` | Windows + Linux |
+| `if_value` | Branche « Vrai » ou « Faux » selon une formule : comparaison, et/ou, valeurs des noeuds précédents. | `condition`, `action_id`, `else_action_id` | Windows + Linux |
+| `if_system` | Branche « Vrai » ou « Faux » selon l'état de l'ordinateur : uptime, CPU, température, RAM, batterie, heure... | `metric`, `arg`, `op`, `value`, `on_unknown`, `action_id`, `else_action_id` | Windows + Linux |
+| `for_each` | Répète les noeuds reliés au port « Pour chaque » pour chaque ligne ou élément d'une liste, puis continue sur « Terminé ». | `items`, `item_var`, `limit`, `action_id` | Windows + Linux |
+| `run_action` | Exécute un autre workflow en lui passant des arguments (args.nom) et récupère son résultat. | `action_id`, `args` | Windows + Linux |
+| `stop_workflow` | Termine immédiatement le workflow (toutes les branches). | `reason` | Windows + Linux |
 
 <!-- steps:end -->
 
-Un exemple complet est livré dans `src/handshortcut/examples/` (chemin affiché par
-`handshortcut paths`). Le geste d'exemple est un gabarit vide : il faut l'enregistrer.
+Un exemple complet est livré dans `src/physicalshortcut/examples/` (chemin affiché par
+`physicalshortcut paths`). Le geste d'exemple est un gabarit vide : il faut l'enregistrer.
 
 ### Compatibilité Linux / Windows
 
 - **Linux** : X11 complet ; Wayland partiel (fenêtres XWayland via `wmctrl`/`xdotool`, volume
-  via `wpctl`/`pactl`, média via `playerctl`). `handshortcut doctor` liste les limites de ta session.
+  via `wpctl`/`pactl`, média via `playerctl`). `physicalshortcut doctor` liste les limites de ta session.
 - **Windows** : fenêtres via `pygetwindow`, volume via `pycaw` (repli sur les touches média),
   luminosité, bureaux virtuels, synthèse vocale et thème via PowerShell.
 - Les étapes propres à un système sont signalées dans le catalogue ; sur l'autre système elles
@@ -235,7 +302,7 @@ Un exemple complet est livré dans `src/handshortcut/examples/` (chemin affiché
 
 ```bash
 uv sync                    # crée .venv (Python 3.12) avec les dépendances
-uv run handshortcut -v     # lance l'application
+uv run physicalshortcut -v     # lance l'application
 uv run pytest              # tests
 uv run ruff check src tests scripts
 uv run python scripts/gen_docs.py   # régénère le tableau des étapes ci-dessus
@@ -270,16 +337,16 @@ La compilation prend 30 à 60 minutes la première fois. La CI fait tout cela au
 ### Publier une version
 
 1. Mets à jour `version` dans `pyproject.toml` et la section correspondante de `CHANGELOG.md`.
-2. Crée et pousse le tag : `git tag v1.0.0 && git push origin v1.0.0`.
+2. Crée et pousse le tag : `git tag v2.0.0 && git push origin v2.0.0`.
 
 Le workflow `.github/workflows/release.yml` vérifie que le tag correspond à `pyproject.toml`,
 construit `.deb`, `.rpm`, `.exe` et `.msi`, calcule `SHA256SUMS` et crée la release GitHub avec
 les notes extraites du changelog. Détails : [docs/github-setup.md](docs/github-setup.md).
 
 ```
-src/handshortcut/         cli, gesture_engine, steps (catalogue), action_executor, platform_utils,
+src/physicalshortcut/         cli, gesture_engine, steps (catalogue), action_executor, platform_utils,
                           schema, config_store, bundle, autostart, doctor, paths
-src/handshortcut/webui/   Flask (app.py), templates, static (CSS, JS, icônes, polices)
+src/physicalshortcut/webui/   Flask (app.py), templates, static (CSS, JS, icônes, polices)
 frontend/                 sources Tailwind + génération du sprite d'icônes
 assets/                   logo, icônes (make_icons.py)
 packaging/                build_exe.py (Nuitka), linux (deb/rpm, systemd), windows (Inno Setup, WiX MSI)
@@ -287,8 +354,27 @@ scripts/                  gen_docs.py, release_notes.py
 tests/                    pytest
 ```
 
+### Capteurs : son, voix, empreinte, matériel
+
+| Déclencheur | Ce qu'il détecte | Prérequis |
+|---|---|---|
+| Son | claquement simple / double / triple, bruit fort, silence | `pip install "physicalshortcut[audio]"`, micro autorisé |
+| Voix | phrases dites (hors ligne), nombre dit | extra `audio` + modèle Vosk dans `<données>/models/` |
+| Empreinte | doigt reconnu / inconnu | Linux : `fprintd` ; Windows : étape « Vérifier mon identité » |
+| Branchement | USB, Bluetooth, secteur, capot, Wi-Fi | – |
+| Capteur (seuil) | lumière, secousse, températures, ventilateur, inactivité, capteur externe | selon la machine |
+
+Un PC n'a **ni capteur de gaz, ni thermomètre de pièce, ni détecteur de mouvement** : branche un Arduino/ESP32
+(extra `serial`) et déclare-le dans *Activité → Capteurs externes*. Le **micro est désactivé par défaut** : il
+ne s'ouvre que si tu l'autorises et qu'un geste Son/Voix existe. Détails : [docs/CAPTEURS.md](docs/CAPTEURS.md).
+
 ## Limites connues
 
+- Capteurs : testés avec des données simulées, pas sur tous les matériels ; Windows Hello ne permet pas
+  l'écoute continue de l'empreinte ; capot, accéléromètre et lumière dépendent de la machine.
+
+- Détection des doigts et reconnaissance des dessins : seuils réglés sur des mains synthétiques, à affiner
+  selon ta caméra ; carré et cercle peuvent se confondre (augmente la confiance minimale ou utilise l'IA).
 - Reconnaissance de séquence : ré-échantillonnage + distance moyenne (pas de DTW) ; sensible à
   une vitesse très différente de l'enregistrement. En cas de faux négatifs, ré-enregistre 2-3 fois.
 - Wayland pur : pas de contrôle des fenêtres natives ni d'injection de clavier sans `ydotool`.
@@ -296,4 +382,4 @@ tests/                    pytest
 - L'interface n'écoute que sur `127.0.0.1` ; ne l'expose jamais sur le réseau : elle peut lancer
   des commandes.
 
-Licence : MIT.
+Licence : MIT. Créé par **yolezz**.

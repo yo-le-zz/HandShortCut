@@ -1,11 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "../src/handshortcut/webui/templates/**/*.html",
-    "../src/handshortcut/webui/static/**/*.js",
+    "../src/physicalshortcut/webui/templates/**/*.html",
+    "../src/physicalshortcut/webui/static/**/*.js",
   ],
   // Classes construites dynamiquement dans le JS (cat-<categorie>) : jamais purgees.
-  safelist: [{ pattern: /^cat-(windows|input|media|web|files|system|logic|chip|text|edge|hover|active)$/ }],
+  safelist: [{ pattern: /^cat-(windows|input|media|web|files|system|data|ai|logic|chip|text|edge|hover|active)$/ }],
   darkMode: "class",
   theme: {
     extend: {

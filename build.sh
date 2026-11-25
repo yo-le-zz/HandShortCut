@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Construit les paquets de HandShortCut : compile l'executable natif (Nuitka) puis
+# Construit les paquets de PhysicalShortCut : compile l'executable natif (Nuitka) puis
 # le package. Detecte le systeme, les outils disponibles et se relance en sudo.
 #
 #   ./build.sh                 auto : tous les formats possibles sur cette machine
@@ -100,11 +100,11 @@ fi
 if [ "$DOCKER" -eq 1 ]; then
     ENGINE="$(command -v docker || command -v podman)" || { echo "docker/podman introuvable" >&2; exit 1; }
     mkdir -p dist
-    "$ENGINE" build -t handshortcut-build -f packaging/linux/Dockerfile packaging/linux
+    "$ENGINE" build -t physicalshortcut-build -f packaging/linux/Dockerfile packaging/linux
     ARGS=(); for f in "${TARGETS[@]}"; do ARGS+=("--$f"); done
     # :Z = etiquette SELinux (Fedora/RHEL)
     "$ENGINE" run --rm -v "$ROOT:/src:Z" -e HOST_UID="$(id -u "$REAL_USER")" -e HOST_GID="$(id -g "$REAL_USER")" \
-        -e JOBS="$JOBS" -e ARGS="${ARGS[*]}" handshortcut-build bash -euc '
+        -e JOBS="$JOBS" -e ARGS="${ARGS[*]}" physicalshortcut-build bash -euc '
             mkdir /tmp/work
             tar -C /src --exclude=.venv --exclude=node_modules --exclude=dist --exclude=build --exclude=.git -cf - . | tar -C /tmp/work -xf -
             cd /tmp/work && ./build.sh $ARGS --jobs "$JOBS"
@@ -137,8 +137,8 @@ export UV_PYTHON_PREFERENCE=managed
 echo "==> Compilation de l'executable (Nuitka)"
 uv sync --frozen --group build --python 3.12
 uv run --frozen --group build python packaging/build_exe.py --jobs "$JOBS"
-DIST="$ROOT/build/exe/handshortcut.dist"
-"$DIST/handshortcut-bin" --version
+DIST="$ROOT/build/exe/physicalshortcut.dist"
+"$DIST/physicalshortcut-bin" --version
 
 # --- 7. Packaging ---
 mkdir -p dist

@@ -3,9 +3,9 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "handshortcut"
-version = "1.0.0"
-description = "Gestes de la main via la webcam -> actions (apps, fenetres, raccourcis, URL, commandes). Linux et Windows."
+name = "physicalshortcut"
+version = "2.0.0"
+description = "Evenements physiques (gestes de la main, son, voix, empreinte, USB, capteurs) -> actions et workflows. Linux et Windows."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "yolezz" }]
@@ -44,17 +44,24 @@ dependencies = [
   "pycaw>=20240210; sys_platform == 'win32'",
 ]
 
+[project.optional-dependencies]
+# Son et voix : micro (sounddevice ; Linux : paquet PortAudio) + reconnaissance vocale hors ligne (Vosk).
+audio = ["sounddevice>=0.4.6", "vosk>=0.3.45"]
+# Capteurs externes (Arduino, ESP32, micro:bit) par port serie.
+serial = ["pyserial>=3.5"]
+sensors = ["sounddevice>=0.4.6", "vosk>=0.3.45", "pyserial>=3.5"]
+
 [project.urls]
-Homepage = "https://github.com/yo-le-zz/HandShortCut"
-Repository = "https://github.com/yo-le-zz/HandShortCut"
-Issues = "https://github.com/yo-le-zz/HandShortCut/issues"
-Changelog = "https://github.com/yo-le-zz/HandShortCut/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/yo-le-zz/PhysicalShortCut"
+Repository = "https://github.com/yo-le-zz/PhysicalShortCut"
+Issues = "https://github.com/yo-le-zz/PhysicalShortCut/issues"
+Changelog = "https://github.com/yo-le-zz/PhysicalShortCut/blob/main/CHANGELOG.md"
 
 [project.scripts]
-handshortcut = "handshortcut.cli:main"
+physicalshortcut = "physicalshortcut.cli:main"
 
 [project.gui-scripts]
-handshortcut-gui = "handshortcut.cli:main"
+physicalshortcut-gui = "physicalshortcut.cli:main"
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6", "pillow>=10.4"]
@@ -63,20 +70,20 @@ build = ["nuitka>=2.5", "ordered-set>=4.1", "zstandard>=0.23"]
 
 [tool.uv]
 default-groups = ["dev"]
-# mediapipe 0.10.14 declare jax, jaxlib et sounddevice (matplotlib reste requis), mais le code
-# de HandShortCut n'utilise que `mp.solutions.hands` + `drawing_utils`.
+# mediapipe 0.10.14 declare jax et jaxlib (matplotlib reste requis), mais le code de
+# PhysicalShortCut n'utilise que `mp.solutions.hands` + `drawing_utils`.
 # Un marqueur jamais vrai retire ces paquets (~300 Mo) de l'installation.
+# sounddevice n'est plus retire : il sert au micro (extra `audio`).
 override-dependencies = [
   "jax; sys_platform == 'never'",
   "jaxlib; sys_platform == 'never'",
-  "sounddevice; sys_platform == 'never'",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/handshortcut"]
+packages = ["src/physicalshortcut"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/handshortcut", "tests", "assets", "scripts", "README.md", "LICENSE", "CHANGELOG.md"]
+include = ["src/physicalshortcut", "tests", "assets", "scripts", "README.md", "LICENSE", "CHANGELOG.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

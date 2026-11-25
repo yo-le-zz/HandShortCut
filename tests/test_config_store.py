@@ -1,6 +1,6 @@
 import json
 
-from handshortcut.config_store import ConfigStore
+from physicalshortcut.config_store import ConfigStore
 
 
 def test_creates_empty_files(store):

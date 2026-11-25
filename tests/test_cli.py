@@ -1,7 +1,7 @@
 import pytest
 
-from handshortcut import __version__, paths
-from handshortcut.cli import build_parser, main
+from physicalshortcut import __version__, paths
+from physicalshortcut.cli import build_parser, main
 
 
 def test_paths_command(capsys, tmp_path):

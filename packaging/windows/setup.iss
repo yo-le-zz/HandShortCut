@@ -1,14 +1,14 @@
-; Installateur Windows de HandShortCut (Inno Setup 6).
+; Installateur Windows de PhysicalShortCut (Inno Setup 6).
 ; Construit par packaging\windows\build.ps1 (ou la CI) : il embarque l'executable
 ; natif compile avec Nuitka (aucun Python ni internet requis a l'installation).
-; Les donnees utilisateur vont dans %LOCALAPPDATA%\HandShortCut.
+; Les donnees utilisateur vont dans %LOCALAPPDATA%\PhysicalShortCut.
 
 #ifndef MyAppVersion
   #define MyAppVersion "0.0.0"
 #endif
-#define MyAppName "HandShortCut"
-#define MyAppExe "{app}\handshortcut.exe"
-#define MyAppCli "{app}\handshortcut.exe"
+#define MyAppName "PhysicalShortCut"
+#define MyAppExe "{app}\physicalshortcut.exe"
+#define MyAppCli "{app}\physicalshortcut.exe"
 
 [Setup]
 AppId={{7C0B6E52-3F0D-4D8E-9A57-2B6C1E4F8A11}
@@ -24,7 +24,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 SetupIconFile=..\..\assets\icon.ico
 UninstallDisplayIcon={app}\icon.ico
 OutputDir=..\..\dist
-OutputBaseFilename=HandShortCut-Setup-{#MyAppVersion}
+OutputBaseFilename=PhysicalShortCut-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -35,11 +35,11 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "autostart"; Description: "Demarrer HandShortCut avec Windows"; GroupDescription: "Options :"
+Name: "autostart"; Description: "Demarrer PhysicalShortCut avec Windows"; GroupDescription: "Options :"
 Name: "desktopicon"; Description: "Creer un raccourci sur le bureau"; GroupDescription: "Options :"; Flags: unchecked
 
 [Files]
-Source: "..\..\build\exe\handshortcut.dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\build\exe\physicalshortcut.dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\assets\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
@@ -48,10 +48,10 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{#MyAppExe}"; Parameters: "--open
 Name: "{commonstartup}\{#MyAppName}"; Filename: "{#MyAppExe}"; IconFilename: "{app}\icon.ico"; Tasks: autostart
 
 [Run]
-Filename: "{#MyAppExe}"; Parameters: "--open"; Description: "Lancer HandShortCut"; Flags: nowait postinstall skipifsilent
+Filename: "{#MyAppExe}"; Parameters: "--open"; Description: "Lancer PhysicalShortCut"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{#MyAppCli}"; Parameters: "stop"; Flags: runhidden skipifdoesntexist; RunOnceId: "StopHandShortCut"
+Filename: "{#MyAppCli}"; Parameters: "stop"; Flags: runhidden skipifdoesntexist; RunOnceId: "StopPhysicalShortCut"
 
 [Code]
 function StopRunningInstance(): Boolean;
