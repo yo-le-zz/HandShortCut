@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+frontend/node_modules/
+packaging/windows/build/
+# donnees utilisateur (stockees hors du depot, voir `physicalshortcut paths`)
+data/

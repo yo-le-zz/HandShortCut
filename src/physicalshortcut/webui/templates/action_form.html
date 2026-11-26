@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% set editing = action is not none %}
+{% block title %}{{ "Modifier le workflow" if editing else "Nouveau workflow" }}{% endblock %}
+{% block header %}Workflows / {{ "Modifier" if editing else "Nouveau" }}{% endblock %}
+{% block content %}
+
+<script type="application/json" id="form-data">{{ form_json | safe }}</script>
+<script type="application/json" id="action-data">{{ (action if editing else {"name": "", "nodes": [], "edges": []}) | tojson }}</script>
+
+<div class="flex flex-wrap items-end gap-4 mb-5">
+  <label class="flex-1 min-w-[16rem] flex flex-col gap-1.5">
+    <span class="field-label">Nom du workflow</span>
+    <input type="text" id="action-name" maxlength="100" placeholder="Ex : Mode musique" class="field-input py-2.5 text-base">
+  </label>
+  <div class="flex items-center gap-2 flex-wrap">
+    <button type="button" id="btn-layout" class="btn-secondary" title="Réorganiser les noeuds de haut en bas">{{ icon("workflow", "w-4 h-4") }} Ranger</button>
+    <button type="button" id="btn-test" class="btn-secondary" title="Exécute le workflow tel qu'il est affiché, sans l'enregistrer">
+      {{ icon("play", "w-4 h-4") }} Tester
+    </button>
+    <button type="button" id="btn-save" class="btn-primary">{{ icon("save", "w-4 h-4") }} Enregistrer</button>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-[250px_minmax(0,1fr)_330px] gap-4 items-start">
+
+  <aside class="card p-3 xl:sticky xl:top-20" aria-label="Ajouter un noeud">
+    <div class="relative mb-2">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">{{ icon("search", "w-4 h-4") }}</span>
+      <input type="search" id="palette-search" placeholder="Rechercher un noeud…" class="field-input pl-9" autocomplete="off">
+    </div>
+    <div id="palette-tabs" class="flex flex-wrap gap-1.5 mb-3"></div>
+    <div id="palette" class="space-y-3 max-h-[56vh] overflow-y-auto pr-1"></div>
+  </aside>
+
+  <section aria-label="Graphe du workflow" class="min-w-0">
+    <div class="flex items-center justify-between mb-2 text-sm text-on-surface-variant">
+      <span><span id="graph-count">0 noeud</span> · <span id="graph-edges">0 lien</span></span>
+      <span class="flex items-center gap-3">
+        <span class="text-xs hidden 2xl:block">Molette = zoom · glisse dans le vide = déplacer · point coloré → noeud = relier · Suppr · Ctrl+S</span>
+        <span class="gzoom" role="group" aria-label="Zoom">
+          <button type="button" id="zoom-out" title="Dézoomer ( - )" aria-label="Dézoomer">{{ icon("zoom-out", "w-4 h-4") }}</button>
+          <button type="button" id="zoom-label" title="Zoom 100 % ( 0 )">100 %</button>
+          <button type="button" id="zoom-in" title="Zoomer ( + )" aria-label="Zoomer">{{ icon("zoom-in", "w-4 h-4") }}</button>
+          <button type="button" id="zoom-fit" title="Tout voir" aria-label="Tout voir">{{ icon("maximize", "w-4 h-4") }}</button>
+        </span>
+      </span>
+    </div>
+    <div id="graph-scroll" class="graph-scroll" tabindex="0">
+      <div id="graph-canvas" class="graph-canvas">
+        <div id="graph-world" class="graph-world">
+          <svg id="graph-svg" class="graph-svg" aria-hidden="true"></svg>
+          <div id="graph-nodes"></div>
+        </div>
+      </div>
+    </div>
+    <div id="graph-empty" class="hidden mt-3 text-center text-sm text-on-surface-variant">
+      Le graphe est vide : choisis un noeud dans la liste de gauche (il est relié automatiquement au noeud sélectionné).
+    </div>
+    <div id="test-result" class="card p-4 mt-4 hidden">
+      <div class="text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-2">{{ icon("activity", "w-4 h-4") }} Résultat du test</div>
+      <div id="test-summary" class="text-sm mb-2"></div>
+      <div id="test-vars" class="space-y-1 font-mono text-xs"></div>
+    </div>
+  </section>
+
+  <aside class="card p-4 xl:sticky xl:top-20 max-h-[82vh] overflow-y-auto" aria-label="Réglages du noeud" id="inspector"></aside>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/action_form.js') }}"></script>
+{% endblock %}

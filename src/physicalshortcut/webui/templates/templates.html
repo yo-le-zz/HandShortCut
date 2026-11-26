@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Modèles{% endblock %}
+{% block header %}Modèles{% endblock %}
+{% block content %}
+<div class="border-l-2 border-primary pl-3 mb-6">
+  <h1 class="text-xl font-semibold">Modèles prêts à l'emploi</h1>
+  <p class="text-sm text-on-surface-variant mt-0.5">Installe un workflow complet avec ses gestes proposés (doigts, comptage, dessin, deux mains). Tu pourras tout modifier ensuite.</p>
+</div>
+
+<div class="flex flex-wrap gap-1.5 mb-6" id="tpl-filters">
+  <button type="button" class="chip chip-primary border border-outline" data-filter="all">Tous</button>
+  {% for c in categories %}
+  <button type="button" class="chip chip-muted border border-outline cat-{{ c }}" data-filter="{{ c }}">{{ c }}</button>
+  {% endfor %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+  {% for t in templates %}
+  <div class="card p-5 flex flex-col cat-{{ t.category }}" data-tpl-card data-category="{{ t.category }}">
+    <div class="flex items-start gap-3 mb-3">
+      <span class="cat-chip w-10 h-10 rounded-lg flex items-center justify-center shrink-0">{{ icon(t.icon) }}</span>
+      <div class="min-w-0">
+        <div class="font-medium">{{ t.title }}</div>
+        <div class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant">{{ t.nodes }} noeud(s) · {{ t.category }}</div>
+      </div>
+    </div>
+    <p class="text-sm text-on-surface-variant flex-1">{{ t.description }}</p>
+    <div class="flex flex-wrap gap-1.5 my-3">
+      {% for g in t.gestures %}
+      <span class="chip chip-muted" title="{{ g.name }}">{{ icon(gesture_icons.get(g.type, "hand"), "w-3 h-3") }} {{ gesture_labels.get(g.type, g.type) }}{% if g.hands == 2 %} · 2 mains{% endif %}</span>
+      {% endfor %}
+    </div>
+    <div class="flex gap-2">
+      <button type="button" class="btn-primary flex-1" data-install="{{ t.id }}">{{ icon("download", "w-4 h-4") }} Installer</button>
+      <button type="button" class="btn-secondary" data-install="{{ t.id }}" data-no-gestures title="Installer seulement le workflow">{{ icon("workflow", "w-4 h-4") }}</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/templates.js') }}"></script>
+{% endblock %}

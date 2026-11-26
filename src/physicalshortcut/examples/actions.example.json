@@ -1,0 +1,41 @@
+[
+  {
+    "id": "gojo_domain_setup",
+    "name": "Domain Expansion Setup",
+    "steps": [
+      {
+        "type": "launch",
+        "path": "C:\\Games\\Fishtrap\\fishtrap.exe",
+        "wait_ms": 2000
+      },
+      {
+        "type": "move_window",
+        "title_contains": "Fishtrap",
+        "monitor": 1,
+        "position": "fullscreen"
+      },
+      {
+        "type": "launch",
+        "path": "spotify",
+        "wait_ms": 2000
+      },
+      {
+        "type": "move_window",
+        "title_contains": "Spotify",
+        "monitor": 2,
+        "position": "left_half"
+      },
+      {
+        "type": "launch",
+        "path": "discord",
+        "wait_ms": 2500
+      },
+      {
+        "type": "move_window",
+        "title_contains": "Discord",
+        "monitor": 2,
+        "position": "right_half"
+      }
+    ]
+  }
+]

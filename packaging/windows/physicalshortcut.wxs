@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Paquet MSI de PhysicalShortCut (WiX Toolset v5).
+  Construit par packaging\windows\build_msi.ps1 : l'executable natif (Nuitka) est
+  embarque tel quel, tous les fichiers du dossier sont recenses automatiquement
+  (<Files>). Variables attendues (-d) : Version, DistDir, IconFile, LicenseRtf.
+
+  Installation silencieuse :
+    msiexec /i PhysicalShortCut-2.1.0-x64.msi /qn
+    msiexec /i PhysicalShortCut-2.1.0-x64.msi /qn AUTOSTART=1     (demarrage avec Windows)
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="PhysicalShortCut"
+           Manufacturer="yolezz"
+           Version="$(Version)"
+           UpgradeCode="3B8E5C1A-6D42-4F7B-9A0E-5D2C7F1B9E64"
+           Language="1036"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <SummaryInformation Description="PhysicalShortCut - gestes de la main vers actions" />
+    <MajorUpgrade DowngradeErrorMessage="Une version plus recente de PhysicalShortCut est deja installee." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="AppIcon.ico" SourceFile="$(IconFile)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/yo-le-zz/PhysicalShortCut" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/yo-le-zz/PhysicalShortCut/issues" />
+
+    <!-- 1 = demarrer PhysicalShortCut a l'ouverture de session Windows -->
+    <Property Id="AUTOSTART" Value="0" />
+
+    <!-- libere les fichiers (arret de l'instance en cours) avant mise a jour ou desinstallation -->
+    <CustomAction Id="StopRunningApp"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[INSTALLFOLDER]physicalshortcut.exe&quot; stop"
+                  Execute="immediate"
+                  Return="ignore" />
+    <InstallExecuteSequence>
+      <Custom Action="StopRunningApp" Before="InstallValidate"
+              Condition="REMOVE=&quot;ALL&quot; OR WIX_UPGRADE_DETECTED" />
+    </InstallExecuteSequence>
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="PhysicalShortCut" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="PhysicalShortCut" />
+    </StandardDirectory>
+
+    <!-- tous les fichiers de l'executable compile -->
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(DistDir)\**" />
+    </ComponentGroup>
+
+    <ComponentGroup Id="Shortcuts" Directory="ApplicationProgramsFolder">
+      <Component Id="StartMenuShortcut" Guid="6F2A9D14-8B35-4C0E-A7D1-3E5B9C8F2A10">
+        <Shortcut Id="StartMenuShortcutLink"
+                  Name="PhysicalShortCut"
+                  Description="Gestes de la main vers actions"
+                  Target="[INSTALLFOLDER]physicalshortcut.exe"
+                  Arguments="--open"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIcon.ico" />
+        <RemoveFolder Id="RemoveProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\PhysicalShortCut" Name="StartMenuShortcut"
+                       Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="Autostart" Directory="INSTALLFOLDER">
+      <Component Id="AutostartRun" Guid="A41C7E90-52D8-4B6F-8E13-7C9D0B2F5A38" Condition="AUTOSTART = 1">
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                       Name="PhysicalShortCut" Type="string"
+                       Value="&quot;[INSTALLFOLDER]physicalshortcut.exe&quot;" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="Main" Title="PhysicalShortCut" Level="1" AllowAbsent="no">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="Shortcuts" />
+      <ComponentGroupRef Id="Autostart" />
+    </Feature>
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(LicenseRtf)" />
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+  </Package>
+</Wix>

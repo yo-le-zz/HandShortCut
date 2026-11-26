@@ -1,0 +1,86 @@
+{% from "_icons.html" import icon %}
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhysicalShortCut — {% block title %}Config{% endblock %}</title>
+<link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body class="min-h-screen flex">
+
+<aside class="w-64 shrink-0 border-r border-outline bg-surface flex flex-col h-screen sticky top-0">
+  <div class="px-5 py-5 border-b border-outline">
+    <a href="/" class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='logo.png') }}" class="w-10 h-10" alt="">
+      <div>
+        <div class="font-semibold text-[1.05rem] leading-tight">PhysicalShortCut</div>
+        <div class="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant">Gesture Studio</div>
+      </div>
+    </a>
+  </div>
+
+  <nav class="flex-1 px-3 py-4 flex flex-col gap-1 text-sm" aria-label="Navigation principale">
+    <div class="px-3 pb-1 text-[11px] font-mono uppercase tracking-wider text-on-surface-variant/70">Général</div>
+    <a href="/" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg {{ 'active' if active == 'dashboard' else '' }}">
+      {{ icon("layout-dashboard") }} Tableau de bord
+    </a>
+
+    <div class="px-3 pt-4 pb-1 text-[11px] font-mono uppercase tracking-wider text-on-surface-variant/70">Gestes</div>
+    <a href="/gestures/new" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg {{ 'active' if active == 'gesture' else '' }}">
+      {{ icon("hand") }} Nouveau geste
+    </a>
+
+    <div class="px-3 pt-4 pb-1 text-[11px] font-mono uppercase tracking-wider text-on-surface-variant/70">Workflows</div>
+    <a href="/actions/new" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg {{ 'active' if active == 'action' else '' }}">
+      {{ icon("workflow") }} Nouveau workflow
+    </a>
+    <a href="/templates" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg {{ 'active' if active == 'templates' else '' }}">
+      {{ icon("layout-template") }} Modèles
+    </a>
+
+    <div class="px-3 pt-4 pb-1 text-[11px] font-mono uppercase tracking-wider text-on-surface-variant/70">Suivi</div>
+    <a href="/activity" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg {{ 'active' if active == 'activity' else '' }}">
+      {{ icon("activity") }} Activité &amp; réglages
+    </a>
+
+    <div class="px-3 pt-4 pb-1 text-[11px] font-mono uppercase tracking-wider text-on-surface-variant/70">Configuration</div>
+    <a href="/api/export" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg" download>
+      {{ icon("download") }} Exporter
+    </a>
+    <button type="button" data-import-open class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-left">
+      {{ icon("upload") }} Importer
+    </button>
+    <input type="file" accept="application/json,.json" class="hidden" data-import-file>
+  </nav>
+
+  <div class="px-4 py-4 border-t border-outline text-xs font-mono text-on-surface-variant space-y-2">
+    <div class="flex items-center gap-2" data-camera-badge>
+      <span class="w-2 h-2 rounded-full bg-on-surface-variant inline-block" data-camera-dot></span>
+      <span data-camera-label>Caméra…</span>
+    </div>
+    <div class="flex items-center gap-2">
+      {{ icon("gauge", "w-4 h-4") }} <span data-fps>—</span>
+    </div>
+    <div class="flex items-center justify-between pt-1">
+      <span>v{{ version }}</span>
+      <a href="https://github.com/yo-le-zz/PhysicalShortCut" target="_blank" rel="noopener" class="hover:text-on-surface" title="Dépôt GitHub">GitHub</a>
+    </div>
+    <div class="text-[11px] text-on-surface-variant/80">{{ credits }}</div>
+  </div>
+</aside>
+
+<div class="flex-1 min-w-0">
+  <header class="h-14 border-b border-outline px-8 flex items-center glass sticky top-0 z-10">
+    <div class="text-sm font-mono text-on-surface-variant uppercase tracking-wider">{% block header %}{% endblock %}</div>
+  </header>
+  <main class="max-w-7xl mx-auto px-8 py-8">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,163 @@
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("fonts/geist-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "JetBrains Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations");
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-background text-on-surface font-sans; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #2d2d39; border-radius: 20px; }
+}
+
+@layer components {
+  /* Icones Lucide (sprite /static/icons.svg) : trait herite de currentColor */
+  .icon {
+    width: 1.25rem; height: 1.25rem; flex-shrink: 0;
+    fill: none; stroke: currentColor; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round;
+    vertical-align: middle;
+  }
+  .glass { background: rgba(19, 19, 23, 0.75); backdrop-filter: blur(12px); }
+
+  /* Navigation laterale */
+  .nav-link { color: #a9a2b8; border-left: 2px solid transparent; transition: color .15s, background .15s; }
+  .nav-link:hover { color: #e4e1e7; background: rgba(255, 255, 255, 0.04); }
+  .nav-link.active {
+    color: #e4e1e7; background: rgba(139, 92, 246, 0.12); border-left-color: #8b5cf6;
+  }
+
+  /* Champs de formulaire */
+  .field-input {
+    @apply w-full bg-surface-low border border-outline rounded-lg px-3 py-2 text-sm
+      focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30;
+  }
+  .field-input.invalid { @apply border-error ring-2 ring-error/20; }
+  .field-label { @apply text-xs font-mono uppercase tracking-wider text-on-surface-variant; }
+  .field-hint { @apply text-xs text-on-surface-variant; }
+  input[type="range"] { accent-color: #8b5cf6; }
+
+  /* Boutons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-primary hover:brightness-110
+      transition text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-glow
+      disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 border border-outline-strong
+      text-on-surface hover:bg-white/5 transition text-sm font-medium px-4 py-2.5 rounded-lg
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 border border-error text-error
+      hover:bg-error/10 transition text-sm font-medium px-4 py-2.5 rounded-lg
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant
+      hover:bg-white/5 hover:text-on-surface transition focus-visible:outline-none
+      focus-visible:ring-2 focus-visible:ring-primary/50;
+  }
+  .icon-btn.danger:hover { @apply text-error bg-error/10; }
+  .icon-btn.success:hover { @apply text-success bg-success/10; }
+
+  /* Cartes et pastilles */
+  .card { @apply bg-surface-container border border-outline rounded-xl2; }
+  .chip {
+    @apply inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider
+      px-2 py-0.5 rounded-full;
+  }
+  .chip-primary { @apply bg-primary/15 text-accent; }
+  .chip-muted { @apply bg-white/5 text-on-surface-variant; }
+
+  /* Categories d'etapes : une couleur par categorie (variable --cat = "r g b") */
+  .cat-windows { --cat: 96 165 250; }
+  .cat-input   { --cat: 251 191 36; }
+  .cat-media   { --cat: 244 114 182; }
+  .cat-web     { --cat: 52 211 153; }
+  .cat-files   { --cat: 167 139 250; }
+  .cat-system  { --cat: 251 146 60; }
+  .cat-logic   { --cat: 34 211 238; }
+  .cat-data    { --cat: 129 140 248; }
+  .cat-ai      { --cat: 232 121 249; }
+  .cat-chip    { background: rgb(var(--cat) / 0.15); color: rgb(var(--cat)); }
+  .cat-text    { color: rgb(var(--cat)); }
+  .cat-edge    { border-left: 3px solid rgb(var(--cat) / 0.8); }
+  .cat-hover:hover { border-color: rgb(var(--cat) / 0.6); background: rgb(var(--cat) / 0.06); }
+  .cat-active { background: rgb(var(--cat) / 0.18); color: rgb(var(--cat)); border-color: rgb(var(--cat) / 0.5); }
+
+  /* Editeur d'actions */
+  .step-card { @apply bg-surface-container border border-outline rounded-xl transition; }
+  .step-card.dragging { opacity: 0.35; }
+  .step-card.disabled-step { opacity: 0.55; }
+  .step-card.drop-before { box-shadow: 0 -3px 0 0 #8b5cf6; }
+  .step-card.drop-after { box-shadow: 0 3px 0 0 #8b5cf6; }
+  .drag-handle { @apply cursor-grab active:cursor-grabbing touch-none; }
+  .palette-item {
+    @apply flex items-center gap-2.5 w-full text-left text-sm px-2.5 py-2 rounded-lg border
+      border-transparent text-on-surface transition;
+  }
+  .switch { @apply relative inline-block w-9 h-5 rounded-full bg-outline-strong transition cursor-pointer; }
+  .switch::after {
+    content: ""; @apply absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition;
+  }
+  .switch[aria-checked="true"] { @apply bg-primary; }
+  .switch[aria-checked="true"]::after { transform: translateX(1rem); }
+
+  /* Mesures en direct */
+  .meter { @apply relative h-2 rounded-full bg-white/10 overflow-hidden; }
+  .meter > span { @apply absolute inset-y-0 left-0 rounded-full bg-success transition-all duration-150; }
+  .meter > span.over { @apply bg-error; }
+  .meter > i { @apply absolute inset-y-[-3px] w-0.5 bg-white/80; }
+
+  /* Editeur de workflows (graphe de noeuds) */
+  .graph-scroll { @apply relative overflow-auto border border-outline rounded-xl2 bg-surface-low; height: 80vh; min-height: 560px; cursor: grab; overscroll-behavior: contain;
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 20px 20px; }
+  .graph-scroll.panning { cursor: grabbing; user-select: none; }
+  .graph-canvas { position: relative; }
+  .graph-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .gzoom { @apply inline-flex items-center gap-0.5 rounded-lg border border-outline bg-surface-low p-0.5; }
+  .gzoom button { @apply px-2 py-1 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-white/5 text-xs font-mono; }
+  .graph-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .graph-svg path.edge { fill: none; stroke-width: 2.2; pointer-events: stroke; cursor: pointer; }
+  .graph-svg path.edge:hover { stroke-width: 4; }
+  .graph-svg path.edge.selected { stroke-width: 4.5; filter: drop-shadow(0 0 4px rgba(255,255,255,0.5)); }
+  .graph-svg path.data-edge { fill: none; stroke: #a78bfa; stroke-width: 1.4; stroke-dasharray: 4 4; opacity: 0.75; }
+  .gnode { cursor: default; position: absolute; width: 208px; @apply bg-surface-container border border-outline rounded-xl select-none transition-shadow; touch-action: none; }
+  .gnode:hover { @apply border-outline-strong; }
+  .gnode.selected { @apply border-primary; box-shadow: 0 0 0 2px rgba(139,92,246,0.35); }
+  .gnode.disabled-step { opacity: 0.5; }
+  .gnode.run-ok { border-color: #34d399; } .gnode.run-error { border-color: #ff5c72; } .gnode.run-skipped { border-style: dashed; }
+  .gnode-head { @apply flex items-center gap-2 px-2.5 pt-2.5 pb-1 cursor-grab; }
+  .gnode-head:active { cursor: grabbing; }
+  .gnode-sum { @apply px-2.5 text-[11px] text-on-surface-variant truncate; }
+  .gnode-in { position: absolute; left: 50%; top: -6px; margin-left: -6px; width: 12px; height: 12px; @apply rounded-full bg-surface border-2 border-outline-strong; }
+  .gnode-ports { position: relative; height: 30px; }
+  .gport { position: absolute; bottom: -7px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: crosshair; }
+  .gport i { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid rgb(var(--pc)); background: #131317; display: block; transition: transform .1s; }
+  .gport:hover i { transform: scale(1.35); background: rgb(var(--pc)); }
+  .gport span { font-size: 9px; font-family: ui-monospace, monospace; color: rgb(var(--pc)); position: absolute; bottom: 14px; white-space: nowrap; }
+  .pc-out { --pc: 167 139 250; } .pc-true { --pc: 52 211 153; } .pc-false { --pc: 251 146 60; }
+  .pc-case1 { --pc: 96 165 250; } .pc-case2 { --pc: 244 114 182; } .pc-case3 { --pc: 250 204 21; } .pc-case4 { --pc: 45 212 191; } .pc-case5 { --pc: 192 132 252; } .pc-default { --pc: 148 163 184; }
+  .pc-each { --pc: 34 211 238; } .pc-done { --pc: 148 163 184; } .pc-error { --pc: 255 92 114; }
+  .gnode-start { @apply absolute -top-2.5 left-3 text-[9px] font-mono uppercase tracking-wider px-1.5 rounded bg-primary text-white; }
+  .var-chip { @apply inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-on-surface-variant border border-outline cursor-pointer; }
+  .var-chip:hover { @apply text-on-surface border-primary; }
+  .toast-stack { @apply fixed bottom-6 right-6 z-50 flex flex-col gap-2 items-end; }
+  .toast-card { @apply max-w-sm flex items-start gap-2.5 bg-surface-high border rounded-lg px-4 py-3 text-sm shadow-glow; animation: toast-in .18s ease-out; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .nav-badge { @apply ml-auto text-[10px] font-mono bg-primary/20 text-accent rounded-full px-1.5; }
+}
